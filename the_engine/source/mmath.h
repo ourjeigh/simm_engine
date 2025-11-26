@@ -129,7 +129,7 @@ constexpr real32 math_sin(real32 x)
 	return x * r;
 }
 
-real32 math_cos(real32 x)
+constexpr real32 math_cos(real32 x)
 {
 	return math_sin(x + k_math_real32_half_pi);
 }

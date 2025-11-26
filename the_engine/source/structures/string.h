@@ -10,7 +10,7 @@
 
 const char k_null_char = '\0';
 
-int32 expand_args_string(char* buffer, int32 size, const char* format, va_list args)
+inline int32 expand_args_string(char* buffer, int32 size, const char* format, va_list args)
 {
 	 //doesn't count terminating '\0' even tho it will write one
 	int32 length = _vscprintf(format, args) + 1;

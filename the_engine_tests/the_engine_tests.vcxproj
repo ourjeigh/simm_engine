@@ -53,7 +53,6 @@
       <GenerateMapFile>true</GenerateMapFile>
       <AssemblyDebug>true</AssemblyDebug>
       <AdditionalOptions>/VERBOSE %(AdditionalOptions)</AdditionalOptions>
-      <ForceFileOutput>Enabled</ForceFileOutput>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -73,7 +72,6 @@
       <GenerateMapFile>true</GenerateMapFile>
       <AssemblyDebug>true</AssemblyDebug>
       <AdditionalOptions>/VERBOSE %(AdditionalOptions)</AdditionalOptions>
-      <ForceFileOutput>Enabled</ForceFileOutput>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -93,13 +91,12 @@
     <ClCompile Include="time_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\the_engine\the_engine.vcxproj">
-      <Project>{6fb10d04-0cd3-413e-a1d9-d164c480504b}</Project>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\the_engine\the_engine_lib.vcxproj">
+      <Project>{74fa03db-79cc-427d-99ae-5cc9b0363303}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
