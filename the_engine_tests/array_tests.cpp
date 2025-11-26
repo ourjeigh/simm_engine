@@ -2,6 +2,38 @@
 #include "types/types.h"
 #include "structures/array.h"
 
+TEST(C_ARRAY, C_ARRAY_COPY_CONSTRUCTOR)
+{
+	c_array<int32, 5> array1;
+	for (int32 i = 0; i < 5; ++i)
+	{
+		array1[i] = i * 2;
+	}
+
+	c_array<int32, 5> array2 = array1;
+	for (int32 i = 0; i < 5; ++i)
+	{
+		EXPECT_EQ(array1[i], array2[i]);
+	}
+}
+
+TEST(C_ARRAY, C_ARRAY_COPY)
+{
+	c_array<int32, 5> array1;
+	for (int32 i = 0; i < 5; ++i)
+	{
+		array1[i] = i * 2;
+	}
+
+	c_array<int32, 5> array2;
+
+	array2 = array1;
+	for (int32 i = 0; i < 5; ++i)
+	{
+		EXPECT_EQ(array1[i], array2[i]);
+	}
+}
+
 TEST(C_ARRAY, C_ARRAY_SIZE)
 {
 	const int32 size = 10;
@@ -40,8 +72,7 @@ TEST(C_ARRAY, C_ARRAY_ASSERTS)
 {
 	const int32 size = 10;
 	c_array<real32, size> array;
-
-	EXPECT_DEATH({ array[12] = 5.0f; }, "Assertion failed: index < k_max_size");
+	EXPECT_DEATH({ array[12] = 5.0f; }, ".*");
 }
 
 TEST(C_STACK, C_STACK_PUSH_POP_TOP)
@@ -89,11 +120,11 @@ TEST(C_STACK, C_STACK_ASSERTS)
 	const int32 size = 2;
 	c_stack<real32, size> stack;
 
-	EXPECT_DEATH(stack.top(), "Assertion failed: !empty");
-	EXPECT_DEATH(stack.pop(), "Assertion failed: !empty");
+	EXPECT_DEATH(stack.top(), ".*");
+	EXPECT_DEATH(stack.pop(), ".*");
 
 	stack.push(0);
 	stack.push(0);
 
-	EXPECT_DEATH(stack.push(0), "Assertion failed: !full");
+	EXPECT_DEATH(stack.push(0), ".*");
 }

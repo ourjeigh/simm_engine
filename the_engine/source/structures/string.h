@@ -14,7 +14,7 @@ int32 expand_args_string(char* buffer, int32 size, const char* format, va_list a
 {
 	 //doesn't count terminating '\0' even tho it will write one
 	int32 length = _vscprintf(format, args) + 1;
-	assert(length <= size);
+	ASSERT(length <= size);
 
 	vsprintf_s(buffer, length, format, args);
 
@@ -42,7 +42,7 @@ public:
 
 	void append_va(const char* format, va_list args)
 	{
-		assert(this->top() == k_null_char);
+		ASSERT(this->top() == k_null_char);
 
 		// overwrite existing terminator
 		int32 start = this->m_top;
@@ -62,7 +62,7 @@ public:
 
 	const char* get_const_char()
 	{
-		assert(this->top() == k_null_char);
+		ASSERT(this->top() == k_null_char);
 
 		return &this->m_data[0];
 	}

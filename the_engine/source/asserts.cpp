@@ -1,5 +1,4 @@
 #include "asserts.h"
-#include <stdlib.h>
 #include <logging/logging.h>
 #include <windows.h>
 

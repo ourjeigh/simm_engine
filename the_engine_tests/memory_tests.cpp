@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "memory.h"
+#include "memory/memory.h"
 #include <types/types.h>
 
 TEST(MEMORY, CLEAR_STRUCT)
@@ -18,4 +18,11 @@ TEST(MEMORY, CLEAR_STRUCT)
 	
 	EXPECT_EQ(test_struct.a, 0);
 	EXPECT_EQ(test_struct.b, 0.0f);
+}
+
+TEST(MEMORY, MEMCOPY)
+{
+	int32 source[] = { 1,3,5,7,9 };
+	int32 dest[] = { 0,0,0,0,0 };
+	memory_copy(dest, source, sizeof(int32) * 5);
 }

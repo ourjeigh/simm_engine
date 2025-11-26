@@ -3,8 +3,8 @@
 #pragma once
 
 #include "types/types.h"
-#include <cassert>
-#include <intrin.h>
+#include "asserts.h"
+#include "memory/memory.h"
 
 template<class t_type, int32 k_max_size>
 class c_array
@@ -17,11 +17,36 @@ public:
 		t_type* operator->() { return m_ptr; }
 		iterator& operator++() { m_ptr++; return *this; }
 		iterator operator++(int) { iterator temp = *this; ++(*this); return temp; }
-		friend bool operator== (const iterator& a, const iterator& b) { return a.m_ptr == b.m_ptr; };
-		friend bool operator!= (const iterator& a, const iterator& b) { return !(a == b); };
+		//friend bool operator== (const iterator& a, const iterator& b) { return a.m_ptr == b.m_ptr; };
+		//friend bool operator!= (const iterator& a, const iterator& b) { return !(a == b); };
+		bool operator== (const iterator& other) const { return m_ptr == other.m_ptr; }
+		bool operator!= (const iterator& other) const { return !(*this == other); }
 	private:
 		t_type* m_ptr;
 	};
+
+	c_array<t_type, k_max_size>() { zero_object(m_data); }
+	~c_array<t_type, k_max_size>() {}
+	c_array<t_type, k_max_size>(const c_array<t_type, k_max_size>& other)
+	{
+		for (int32 i = 0; i < k_max_size; ++i)
+		{
+			m_data[i] = other.m_data[i];
+		}
+	}
+
+	c_array<t_type, k_max_size>& operator=(const c_array<t_type, k_max_size>& other)
+	{
+		if (this != &other)
+		{
+			for (int32 i = 0; i < k_max_size; ++i)
+			{
+				m_data[i] = other.m_data[i];
+			}
+		}
+
+		return *this;
+	}
 
 	int32 size() { return k_max_size; }
 
@@ -31,14 +56,20 @@ public:
 		return m_data[index];
 	}
 
+	const t_type& operator[](int32 index) const
+	{
+		assert_valid_index(index);
+		return m_data[index];
+	}
+
 	iterator begin() { return iterator(&m_data[0]); }
 	iterator end() { return iterator(&m_data[k_max_size]); }
 
 protected:
-	void assert_valid_index(int32 index)
+	void assert_valid_index(int32 index) const
 	{
-		assert(index >= 0);
-		assert(index < k_max_size);
+		ASSERT(index >= 0);
+		ASSERT(index < k_max_size);
 	}
 
 	t_type m_data[k_max_size];
@@ -57,26 +88,26 @@ public:
 
 	void push(t_type item)
 	{
-		assert(!full());
+		ASSERT(!full());
 		this->m_data[++m_top] = item;
 	}
 
 	void pop()
 	{
-		assert(!empty());
+		ASSERT(!empty());
 		m_top--;
 	}
 
 	t_type top()
 	{
-		assert(!empty());
+		ASSERT(!empty());
 		return this->m_data[m_top];
 	}
 
 	t_type* get_item(int32 index)
 	{
-		assert(0 <= index);
-		assert(index <= m_top);
+		ASSERT(0 <= index);
+		ASSERT(index <= m_top);
 		return &this->m_data[index];
 	}
 

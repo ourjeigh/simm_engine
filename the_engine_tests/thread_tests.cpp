@@ -21,7 +21,6 @@ void test_function_loop()
 	}
 }
 
-
 TEST(THREADS, CREATE_AND_START_THREAD)
 {
 	c_thread test_thread;

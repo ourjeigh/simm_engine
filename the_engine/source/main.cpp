@@ -4,7 +4,7 @@
 #include <engine/engine_system.h>
 #include <engine/input/input_system.h>
 #include <engine/input/input_map.h>
-#include <memory.h>
+#include "memory/memory.h"
 #include <threads/threads.h>
 #include <logging/logging.h>
 

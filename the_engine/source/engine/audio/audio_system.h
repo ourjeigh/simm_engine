@@ -5,10 +5,9 @@
 #include "engine/engine_system.h"
 #include <threads/threads.h>
 #include <asserts.h>
-#include <cmath>
 
-const real32 k_math_real32_pi = 3.14159265358979323846f;
-const real32 k_math_real32_2pi = 2 * k_math_real32_pi;
+//const real32 k_math_real32_pi = 3.14159265358979323846f;
+//const real32 k_math_real32_2pi = 2 * k_math_real32_pi;
 
 class c_audio_source_sine;
 
@@ -57,7 +56,7 @@ public:
 
 		while (num_samples)
 		{
-			*buffer++ = sinf((k_math_real32_2pi * m_frequency) * (m_sample_position++ / this->m_sample_rate));
+			//*buffer++ = math_sin((k_math_real32_two_pi * m_frequency) * (m_sample_position++ / this->m_sample_rate));
 			num_samples--;
 		}
 	}
@@ -85,7 +84,6 @@ public:
 			g_x2 += g_x1;
 		}
 	}
-
 
 	void whitenoise(
 		float* _fpDstBuffer, // Pointer to buffer

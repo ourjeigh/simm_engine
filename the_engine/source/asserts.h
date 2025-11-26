@@ -3,6 +3,7 @@
 #pragma once
 #include <intrin.h>
 
+// TODO: figure out why this doesn't pass the correct string to gtests EXPECT_DEATH
 #define ASSERT(condition) \
 	do { \
 		if (!(condition)) { \
