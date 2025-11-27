@@ -2,7 +2,7 @@
 #define __INPUT_MAP_H__
 #pragma once
 
-#include "types/types.h";
+#include "types/types.h"
 #include "asserts.h"
 #include <Windows.h>
 

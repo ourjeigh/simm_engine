@@ -83,15 +83,15 @@
     <TargetName>$(ProjectName.toLower())_$(Configuration.toLower())_$(Platform.toLower())</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)build\bin\</OutDir>
-    <IntDir>$(ProjectDir)build\obj\</IntDir>
+    <OutDir>$(ProjectDir)build\bin\$(ProjectName.toLower())\</OutDir>
+    <IntDir>$(ProjectDir)build\obj\$(ProjectName.toLower())\</IntDir>
     <TargetName>$(ProjectName.toLower())_$(Configuration.toLower())_$(Platform.toLower())</TargetName>
     <ExecutablePath>$(VC_ExecutablePath_x64);$(CommonExecutablePath)</ExecutablePath>
     <IncludePath>$(ProjectDir)source\;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)build\bin\</OutDir>
-    <IntDir>$(ProjectDir)build\obj\</IntDir>
+    <OutDir>$(ProjectDir)build\bin\$(ProjectName.toLower())\</OutDir>
+    <IntDir>$(ProjectDir)build\obj\$(ProjectName.toLower())\</IntDir>
     <TargetName>$(ProjectName.toLower())_$(Configuration.toLower())_$(Platform.toLower())</TargetName>
     <ExecutablePath>$(VC_ExecutablePath_x64);$(CommonExecutablePath)</ExecutablePath>
     <IncludePath>$(ProjectDir)source\;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
