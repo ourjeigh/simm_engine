@@ -2,11 +2,11 @@
 
 // returns actual samples written
 template<typename t_type, int32 k_channel_count, int32 k_size>
-int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::write(const c_audio_buffer<t_type, k_channel_count, k_size>* in_buffer, int32 sample_count)
+int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::write(const c_audio_buffer<t_type>* in_buffer, int32 sample_count)
 {
-	int32 free_samples = (m_read_position - m_write_position + k_size) % k_size;
-	int32 samples_to_write = math_min(sample_count, free_samples);
-	int32 first_block = k_size - samples_to_write;
+	int32 writable_samples = m_read_position == m_write_position ? k_size : (m_read_position - m_write_position - 1 + k_size) % k_size;
+	int32 samples_to_write = math_min(sample_count, writable_samples);
+	int32 first_block = math_min(k_size - m_write_position, samples_to_write);
 
 	for (int32 channel_index = 0; channel_index < in_buffer->channel_count(); channel_index++)
 	{
@@ -19,7 +19,7 @@ int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::write(const c_audio_
 
 		for (int32 channel_index = 0; channel_index < in_buffer->channel_count(); channel_index++)
 		{
-			memory_copy(&m_buffer.get_channel(channel_index)[m_write_position + first_block], &in_buffer->get_channel_const(channel_index)[first_block], sizeof(t_type) * second_block);
+			memory_copy(&m_buffer.get_channel(channel_index)[0], &in_buffer->get_channel_const(channel_index)[first_block], sizeof(t_type) * second_block);
 		}
 	}
 
@@ -30,7 +30,27 @@ int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::write(const c_audio_
 
 // returns actual samples read
 template<typename t_type, int32 k_channel_count, int32 k_size>
-int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::read(c_audio_buffer<t_type, k_channel_count, k_size>* out_buffer, int32 sample_count)
+int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::read(c_audio_buffer<t_type>* out_buffer, int32 sample_count)
 {
+	int32 readable_samples = (m_write_position - m_read_position + k_size) % k_size;
+	int32 samples_to_read = math_min(sample_count, readable_samples);
+	int32 first_block = math_min(k_size - m_read_position, samples_to_read);
 
+	for (int32 channel_index = 0; channel_index < out_buffer->channel_count(); channel_index++)
+	{
+		memory_copy(&(out_buffer->get_channel(channel_index))[0], &m_buffer.get_channel(channel_index)[m_read_position], sizeof(t_type) * first_block);
+	}
+
+	if (first_block < samples_to_read)
+	{
+		int32 second_block = samples_to_read - first_block;
+		for (int32 channel_index = 0; channel_index < out_buffer->channel_count(); channel_index++)
+		{
+			memory_copy(&out_buffer->get_channel(channel_index)[first_block], &m_buffer.get_channel(channel_index)[0], sizeof(t_type) * second_block);
+		}
+	}
+
+	m_read_position = (m_read_position + samples_to_read) % k_size;
+
+	return samples_to_read;
 }
