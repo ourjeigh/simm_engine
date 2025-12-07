@@ -54,3 +54,71 @@ int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::read(c_audio_buffer<
 
 	return samples_to_read;
 }
+
+template<typename t_type, int32 k_channel_count, int32 k_size>
+int32 c_audio_threadsafe_ring_buffer<t_type, k_channel_count, k_size>::write(const c_audio_buffer<t_type>* in_buffer, int32 sample_count)
+{
+	int32 read_position = m_read_position.load(std::memory_order_relaxed);
+	int32 write_position = m_write_position.load(std::memory_order_acquire);
+
+	int32 writable_samples = m_read_position == write_position ? k_size : (m_read_position - write_position - 1 + k_size) % k_size;
+	int32 samples_to_write = math_min(sample_count, writable_samples);
+	int32 first_block = math_min(k_size - write_position, samples_to_write);
+
+	for (int32 channel_index = 0; channel_index < in_buffer->channel_count(); channel_index++)
+	{
+		memory_copy(&m_buffer.get_channel(channel_index)[write_position], &(in_buffer->get_channel_const(channel_index))[0], sizeof(t_type) * first_block);
+	}
+
+	if (first_block < samples_to_write)
+	{
+		int32 second_block = samples_to_write - first_block;
+
+		for (int32 channel_index = 0; channel_index < in_buffer->channel_count(); channel_index++)
+		{
+			memory_copy(&m_buffer.get_channel(channel_index)[0], &in_buffer->get_channel_const(channel_index)[first_block], sizeof(t_type) * second_block);
+		}
+	}
+
+	m_write_position.store((write_position + samples_to_write) % k_size, std::memory_order_release);
+	return samples_to_write;
+}
+
+// returns actual samples read
+template<typename t_type, int32 k_channel_count, int32 k_size>
+int32 c_audio_threadsafe_ring_buffer<t_type, k_channel_count, k_size>::read(c_audio_buffer<t_type>* out_buffer, int32 sample_count)
+{
+	int32 read_position = m_read_position.load(std::memory_order_acquire);
+	int32 write_position = m_write_position.load(std::memory_order_relaxed);
+
+	int32 readable_samples = (m_write_position - m_read_position + k_size) % k_size;
+	int32 samples_to_read = math_min(sample_count, readable_samples);
+	int32 first_block = math_min(k_size - m_read_position, samples_to_read);
+
+	for (int32 channel_index = 0; channel_index < out_buffer->channel_count(); channel_index++)
+	{
+		memory_copy(&(out_buffer->get_channel(channel_index))[0], &m_buffer.get_channel(channel_index)[m_read_position], sizeof(t_type) * first_block);
+	}
+
+	if (first_block < samples_to_read)
+	{
+		int32 second_block = samples_to_read - first_block;
+		for (int32 channel_index = 0; channel_index < out_buffer->channel_count(); channel_index++)
+		{
+			memory_copy(&out_buffer->get_channel(channel_index)[first_block], &m_buffer.get_channel(channel_index)[0], sizeof(t_type) * second_block);
+		}
+	}
+
+	m_read_position.store((m_read_position + samples_to_read) % k_size, std::memory_order_release);
+	return samples_to_read;
+}
+
+template<typename t_type, int32 k_channel_count, int32 k_size>
+int32 c_audio_threadsafe_ring_buffer<t_type, k_channel_count, k_size>::free_sample_count()
+{
+	int32 read_position = m_read_position.load(std::memory_order_relaxed);
+	int32 write_position = m_write_position.load(std::memory_order_relaxed);
+
+	int32 writable_samples = m_read_position == write_position ? k_size : (m_read_position - write_position - 1 + k_size) % k_size;
+	return writable_samples;
+}

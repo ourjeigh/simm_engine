@@ -14,8 +14,8 @@ const real32 k_math_real32_half_pi = k_math_real32_pi / 2.0f;
 const real32 k_math_real32_two_pi = k_math_real32_pi * 2.0f;
 
 const real64 k_math_real64_pi = 3.14159265358979323846264338327950288;
-const real32 k_math_real64_half_pi = 1.570796326794896619231321691639751442;
-const real32 k_math_real64_two_pi = 6.283185307179586476925286766559005768;
+const real64 k_math_real64_half_pi = 1.570796326794896619231321691639751442;
+const real64 k_math_real64_two_pi = 6.283185307179586476925286766559005768;
 
 template<typename t_type>
 t_type math_min(t_type a, t_type b)
@@ -84,54 +84,48 @@ constexpr int64 math_fact(int64 in)
 	{
 		out *= in;
 	}
+
 	return out;
 }
 
-constexpr real32 math_sin(real32 x)
+constexpr real64 math_sin(real64 x)
 {
-	int64 shift = (x / k_math_real64_two_pi);
+	// shift to [-2*pi, 2*pi]
+	int64 shift = static_cast<int64>(x / k_math_real64_two_pi);
 	x -= shift * k_math_real64_two_pi;
 
-	// correct to range (-pi, pi]
-	/*while (x > k_math_real64_pi)
-	{
-		x -= k_math_real64_two_pi;
-	}
-
-	while (x <= -k_math_real64_pi)
-	{
-		x += k_math_real64_two_pi;
-	}*/
-
-	// fold to [-pi/2, pi/2] using sine symmetries
+	// shift to [-pi/2, pi/2]
 	if (x > k_math_real64_half_pi)
 	{
-		// sin(pi - t) = sin(t)
 		x = k_math_real64_pi - x;
 	}
 	else if (x < -k_math_real64_half_pi)
 	{
-		// sin(-pi - t) = -sin(t) -> transforms to [-pi/2,pi/2]
 		x = -k_math_real64_pi - x;  
 	}
 
-	// now y in [-pi/2, pi/2]
-	real64  z = x * x;
+	real64 x_squared = x * x;
 
-	const real64 C3 = -1.0 / 6.0;       // -1/3!
-	const real64 C5 = 1.0 / 120.0;     //  1/5!
-	const real64 C7 = -1.0 / 5040.0;    // -1/7!
+	const real64 component_3 = -1.0f / 6.0f;	// -1/3!
+	const real64 component_5 = 1.0f / 120.0f;	//  1/5!
+	const real64 component_7 = -1.0f / 5040.0f;	// -1/7!
 
-	real64 r = (C7 * z + C5);
-	r = r * z + C3;
-	r = r * z + 1.0;
+	return x * (1 + x_squared * (component_3 + x_squared * (component_5 + x_squared * component_7)));
+}
 
-	return x * r;
+constexpr real64 math_cos(real64 x)
+{
+	return math_sin(x + k_math_real32_half_pi);
+}
+
+constexpr real32 math_sin(real32 x)
+{
+	return static_cast<real32>(math_sin(static_cast<real64>(x)));
 }
 
 constexpr real32 math_cos(real32 x)
 {
-	return math_sin(x + k_math_real32_half_pi);
+	return static_cast<real32>(math_cos(static_cast<real64>(x)));
 }
 
 #endif //__MAMTH_H__

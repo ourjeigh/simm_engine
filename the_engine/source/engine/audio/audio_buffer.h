@@ -5,12 +5,16 @@
 #include <types/types.h>
 #include "structures/array.h"
 #include "memory.h"
+#include <atomic>
 
 template<typename t_type>
 class c_audio_buffer
 {
 public:
-	c_audio_buffer(int32 channel_count, int32 size) : m_channel_count(channel_count), m_size(size)
+	c_audio_buffer(int32 channel_count, int32 size) : 
+		m_channel_count(channel_count),
+		m_size(size),
+		m_data(nullptr)
 	{
 		ASSERT(channel_count > 0);
 		ASSERT(size > 0);
@@ -93,6 +97,19 @@ public:
 		return &m_storage[channel_index][0];
 	}
 
+	void get_interleaved(t_type* out_buffer, int32 sample_count)
+	{
+		ASSERT(out_buffer != nullptr);
+
+		for (int32 sample_index = 0; sample_index < sample_count; sample_index++)
+		{
+			for (int32 channel_index = 0; channel_index < k_channel_count; channel_index++)
+			{
+				*out_buffer++ = m_storage[channel_index][sample_index];
+			}
+		}
+	}
+
 	//t_type* get_channel_raw(int32 channel_index)
 	//{
 	//	ASSERT(0 <= channel_index && channel_index < k_channel_count);
@@ -115,11 +132,34 @@ public:
 	// returns actual samples read
 	int32 read(c_audio_buffer<t_type>* out_buffer, int32 sample_count);
 
+
 private:
 	int32 m_write_position;
 	int32 m_read_position;
 	c_static_audio_buffer<t_type,k_channel_count, k_size> m_buffer;
 };
+
+template<typename t_type, int32 k_channel_count, int32 k_size>
+class c_audio_threadsafe_ring_buffer
+{
+public:
+	c_audio_threadsafe_ring_buffer() : m_write_position(0), m_read_position(0) { zero_object(m_buffer); }
+	~c_audio_threadsafe_ring_buffer() {}
+
+	// returns actual samples written
+	int32 write(const c_audio_buffer<t_type>* in_buffer, int32 sample_count);
+
+	// returns actual samples read
+	int32 read(c_audio_buffer<t_type>* out_buffer, int32 sample_count);
+
+	int32 free_sample_count();
+
+private:
+	std::atomic<int32> m_write_position;
+	std::atomic<int32> m_read_position;
+	c_static_audio_buffer<t_type, k_channel_count, k_size> m_buffer;
+};
+
 
 template<int32 k_size>
 class c_audio_real32_mono_ring_buffer : public c_audio_ring_buffer<real32, 1, k_size>

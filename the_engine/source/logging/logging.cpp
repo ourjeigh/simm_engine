@@ -8,6 +8,7 @@
 #include <types/types.h>
 #include <structures/string.h>
 #include "asserts.h"
+#include <time/time.h>
 
 const int32 k_max_log_length = 256;
 
@@ -27,9 +28,12 @@ void log_system_term()
 
 void log(e_log_level level, const char* format, ...)
 {
+	t_timestamp current_time = get_high_precision_timestamp();
+	c_time_span time_since_start = get_session_time()->time_since_start(current_time);
+
 	c_string<k_max_log_length> output;
 
-	output.print("%s:", get_log_level_string(level));
+	output.print("%llu %2.3f %s: ", current_time, time_since_start.get_duration_seconds(), get_log_level_string(level));
 
 	va_list args;
 	va_start(args, format);

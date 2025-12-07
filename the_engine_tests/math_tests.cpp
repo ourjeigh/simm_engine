@@ -52,7 +52,7 @@ TEST(MATH, SIN)
 
 	for (int32 i = 0; i < 1; i++)
 	{
-		EXPECT_NEAR(math_sin(0), 0.0f, tolerance);
+		EXPECT_NEAR(math_sin(0.0f), 0.0f, tolerance);
 		EXPECT_NEAR(math_sin(k_math_real32_sixth_pi),						0.5f, tolerance);
 		EXPECT_NEAR(math_sin(k_math_real32_quarter_pi),						0.707f, tolerance); // 1/rt(2)
 		EXPECT_NEAR(math_sin(k_math_real32_third_pi),						0.866f, tolerance); // rt(3)/2 
@@ -69,7 +69,7 @@ TEST(MATH, COS)
 {
 	const real32 tolerance = 0.001f; // 0.1%
 
-	EXPECT_NEAR(math_cos(0),											1.0f, tolerance);
+	EXPECT_NEAR(math_cos(0.0f),											1.0f, tolerance);
 	EXPECT_NEAR(math_cos(k_math_real32_sixth_pi),						0.866f, tolerance); // rt(3)/2 
 	EXPECT_NEAR(math_cos(k_math_real32_quarter_pi),						0.707f, tolerance); // 1/rt(2)
 	EXPECT_NEAR(math_cos(k_math_real32_third_pi),						0.5f, tolerance); 

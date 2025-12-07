@@ -32,11 +32,23 @@ public:
 	c_timer();
 	void start();
 	void stop();
-	const c_time_span* get_time_span() { return &m_span; }
+	const c_time_span* get_time_span() { stop(); return &m_span; }
 	void reset() { m_span.clear(); }
 
 private:
 	c_time_span m_span;
+};
+
+class c_session_time
+{
+public:
+	c_session_time();
+
+	c_time_span get_time_since_start() const;
+	c_time_span time_since_start(t_timestamp time_stamp) const;
+
+private:
+	t_timestamp m_initial_timestamp;
 };
 
 t_timestamp get_high_precision_timestamp();
@@ -45,4 +57,5 @@ c_time_span get_time_since(t_timestamp since);
 void sleep_for_seconds(real32 seconds);
 void sleep_for_milliseconds(uint32 milliseconds);
 
+const c_session_time* get_session_time();
 #endif //__TIME_H__

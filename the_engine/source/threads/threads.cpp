@@ -1,12 +1,44 @@
 #include "threads.h"
 #include "windows.h"
 #include <logging/logging.h>
+#include <comdef.h>
+
+int get_thread_priority(e_thread_priority priority)
+{
+	switch (priority)
+	{
+	case thread_priority_lowest:
+		return THREAD_PRIORITY_LOWEST;
+	case thread_priority_below_normal:
+		return THREAD_PRIORITY_BELOW_NORMAL;
+	case thread_priority_normal:
+		return THREAD_PRIORITY_NORMAL;
+	case thread_priority_above_normal:
+		return THREAD_PRIORITY_ABOVE_NORMAL;
+	case thread_priority_highest:
+		return THREAD_PRIORITY_HIGHEST;
+	case thread_priority_time_critical:
+		return THREAD_PRIORITY_TIME_CRITICAL;
+	default:
+		return THREAD_PRIORITY_NORMAL;
+	}
+}
 
 bool c_thread::create(void* function, void* param, const wchar* name)
 {
-	m_function = function;
-	m_param = param;
-	m_thread_name = name;
+	m_thread_properties.name = name;
+	m_thread_properties.function = function;
+	m_thread_properties.param = param;
+
+	//m_function = function;
+	//m_param = param;
+	//m_thread_name = name;
+	return true;
+}
+
+bool c_thread::create(s_thread_properties& properties)
+{
+	m_thread_properties = properties;
 	return true;
 }
 
@@ -20,17 +52,28 @@ bool c_thread::start()
 	HANDLE h = CreateThread(
 		lpThreadAttributes,
 		dwStackSize,
-		(LPTHREAD_START_ROUTINE)m_function,
-		m_param,
+		(LPTHREAD_START_ROUTINE)m_thread_properties.function,
+		m_thread_properties.param,
 		dwCreationFlags,
 		&m_thread_id);
 
 	if (h != nullptr )
 	{
-		if (m_thread_name != nullptr && SetThreadDescription(h, m_thread_name) != S_OK)
+		if (m_thread_properties.name != nullptr) 
 		{
-			// if we create the thread but fail to name it, we'll still call that a success
-			log(warning, "Failed to set thread description!");
+			HRESULT hr = SetThreadDescription(h, m_thread_properties.name);
+			if (FAILED(hr))
+			{
+				// if we create the thread but fail to name it, we'll still call that a success
+				log(warning, "Failed to set thread description! [%s]", _com_error(hr).ErrorMessage());
+			}
+		}
+
+		int priority = get_thread_priority(m_thread_properties.priority);
+
+		if (!SetThreadPriority(h, priority))
+		{
+			log(warning, "Failed to set thread priority!");
 		}
 	}
 	else

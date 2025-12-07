@@ -5,6 +5,24 @@
 const real64 k_millisecons_in_second = 1000.0f;
 const real64 k_microseconds_in_second = 1000000.0f;
 
+c_session_time g_session_time;
+
+c_session_time::c_session_time()
+{
+	m_initial_timestamp = get_high_precision_timestamp();
+}
+
+c_time_span c_session_time::get_time_since_start() const
+{
+	t_timestamp current_timestamp = get_high_precision_timestamp();
+	return c_time_span(m_initial_timestamp, current_timestamp);
+}
+
+c_time_span c_session_time::time_since_start(t_timestamp time_stamp) const
+{
+	return c_time_span(m_initial_timestamp, time_stamp);
+}
+
 real64 c_time_span::get_duration_seconds() const
 {
 	// A pointer to a variable that receives the current performance-counter frequency, in counts per second. 
@@ -57,7 +75,6 @@ c_time_span get_time_since(t_timestamp since)
 	return c_time_span(since, get_high_precision_timestamp());
 }
 
-
 void sleep_for_seconds(real32 seconds)
 {
 	Sleep(static_cast<uint32>(seconds * k_millisecons_in_second));
@@ -66,4 +83,9 @@ void sleep_for_seconds(real32 seconds)
 void sleep_for_milliseconds(uint32 milliseconds)
 {
 	Sleep(milliseconds);
+}
+
+const c_session_time* get_session_time()
+{
+	return &g_session_time;
 }
