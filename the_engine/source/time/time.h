@@ -4,6 +4,8 @@
 
 #include <types/types.h>
 
+const uint64 k_time_nanoseconds_in_millisecond = 1e6;
+
 typedef uint64 t_timestamp;
 
 class c_time_span

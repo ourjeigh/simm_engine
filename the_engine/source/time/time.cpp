@@ -1,8 +1,11 @@
 #include "time.h"
 #include <windows.h>
+#include <timeapi.h>
 #include <profileapi.h>
+#include <mmath.h>
 
-const real64 k_millisecons_in_second = 1000.0f;
+
+const real64 k_milliseconds_in_second = 1000.0f;
 const real64 k_microseconds_in_second = 1000000.0f;
 
 c_session_time g_session_time;
@@ -40,7 +43,7 @@ real64 c_time_span::get_duration_seconds() const
 
 real64 c_time_span::get_duration_milliseconds() const
 {
-	return get_duration_seconds() * k_millisecons_in_second;
+	return get_duration_seconds() * k_milliseconds_in_second;
 }
 
 real64 c_time_span::get_duration_microseconds() const
@@ -77,12 +80,28 @@ c_time_span get_time_since(t_timestamp since)
 
 void sleep_for_seconds(real32 seconds)
 {
-	Sleep(static_cast<uint32>(seconds * k_millisecons_in_second));
+	// anything under 20ms needs 1ms precision
+	bool needs_precision = seconds < 0.02f;
+
+	if (needs_precision)
+	{
+		timeBeginPeriod(1);
+	}
+
+	Sleep(static_cast<uint32>(seconds * k_milliseconds_in_second));
+
+	if (needs_precision)
+	{
+		timeEndPeriod(1);
+	}
 }
 
 void sleep_for_milliseconds(uint32 milliseconds)
 {
+
+	timeBeginPeriod(1);
 	Sleep(milliseconds);
+	timeEndPeriod(1);
 }
 
 const c_session_time* get_session_time()

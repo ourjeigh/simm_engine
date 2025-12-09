@@ -7,93 +7,10 @@
 #include <asserts.h>
 #include <mmath.h>
 #include "audio_buffer.h"
-
-//const real32 k_math_real32_pi = 3.14159265358979323846f;
-//const real32 k_math_real32_2pi = 2 * k_math_real32_pi;
-
-class c_audio_source_sine;
-
-enum e_audio_sample_type
-{
-	sample_type_unknown = 0,
-	sample_type_int16,
-	sample_type_float32,
-};
-
-struct s_audio_format
-{
-	e_audio_sample_type sample_type;
-	uint16 num_channels;
-	uint32 sample_rate;
-	uint16 buffer_size;
-};
-
-class c_audio_source
-{
-public:
-	c_audio_source() : m_sample_rate(0.0f) {}
-	c_audio_source(int32 sample_rate) : m_sample_rate(static_cast<real32>(sample_rate)) {}
-	~c_audio_source() {}
-
-	virtual void get_samples(real32* buffer, uint32 num_samples) = 0;
-protected:
-	real32 m_sample_rate;
-};
-
-class c_audio_source_sine : public c_audio_source
-{
-public:
-	c_audio_source_sine() : 
-		m_sample_position(0),
-		m_frequency(0.0f),
-		c_audio_source(0)
-	{}
-
-	c_audio_source_sine(int32 sample_rate, real32 frequency) :
-		m_sample_position(0),
-		m_frequency(frequency),
-		c_audio_source(sample_rate)
-	{}
-	~c_audio_source_sine() {}
-
-	void get_samples(real32* buffer, uint32 num_samples)
-	{
-		ASSERT(buffer);
-
-		while (num_samples)
-		{
-			*buffer++ = math_sin((k_math_real32_two_pi * m_frequency) * (m_sample_position++ / this->m_sample_rate));
-			num_samples--;
-		}
-	}
-private:
-	uint32 m_sample_position;
-	real32 m_frequency;
-};
-
-class c_audio_source_noise : public c_audio_source
-{
-public:
-	c_audio_source_noise() : c_audio_source() {}
-	c_audio_source_noise(int32 sample_rate) : c_audio_source(sample_rate) {}
-
-	void get_samples(real32* buffer, uint32 num_samples)
-	{
-		ASSERT(buffer);
-
-		while (num_samples--)
-		{
-			g_x1 ^= g_x2;
-			*buffer++ = g_x2 * g_level;
-			g_x2 += g_x1;
-		}
-	}
-private:
-
-	float g_level = 2.0f / 0xffffffff;
-	int g_x1 = 0x67452301;
-	int g_x2 = 0xefcdab89;
-};
+#include "config.h"
+#include "audio_source.h"
+#include "audio_sink.h"
+#include "audio_types.h"
 
 class c_audio_mixer
 {
@@ -122,6 +39,7 @@ public:
 			{
 				*out_buffer++ = *in_buffers[channel_index]++;
 			}
+
 			num_samples--;
 		}
 	}
@@ -164,11 +82,10 @@ class c_audio_render_thread : public c_thread
 public:
 	c_audio_render_thread() : 
 		m_is_running(false),
-		m_callback_event_handle(nullptr),
-		m_audio_client(nullptr),
-		m_audio_render_client(nullptr),
 		m_device_period_ms(0),
 		m_buffer_size(0),
+		m_sink(),
+		DEBUG_ONLY_PARAM_RIGHT_COMMA(d_read_initialized(false))
 		c_thread() {}
 	~c_audio_render_thread() {}
 
@@ -178,19 +95,17 @@ public:
 private:
 	static void audio_render_thread_entry_point(c_audio_render_thread* thread);
 	void render_audio();
-	bool setup_audio_device();
-	void shutdown_audio_device();
+	bool setup_audio_sink();
+	void shutdown_audio_sink();
 
 	bool m_is_running;
-
-	// move these to platform audio sync type
-	// only need for exclusive mode
-	void* m_callback_event_handle;
-	void* m_audio_client;
-	void* m_audio_render_client;
 	
+	c_audio_sink m_sink;
+
 	uint32 m_device_period_ms;
 	uint32 m_buffer_size;
+
+	DEBUG_ONLY_MEMBER(bool d_read_initialized);
 };
 
 

@@ -100,3 +100,9 @@ void c_thread::join()
 	}
 
 }
+
+
+uint32 get_current_thread_id()
+{
+	return GetCurrentThreadId();
+}

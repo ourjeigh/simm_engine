@@ -45,4 +45,6 @@ private:
 	s_thread_properties m_thread_properties;
 };
 
+uint32 get_current_thread_id();
+
 #endif //__THREADS_H__

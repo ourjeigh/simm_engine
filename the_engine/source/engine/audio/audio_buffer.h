@@ -152,7 +152,10 @@ public:
 	// returns actual samples read
 	int32 read(c_audio_buffer<t_type>* out_buffer, int32 sample_count);
 
+	int32 read_interleaved(t_type* out_buffer, int32 sample_count);
+
 	int32 free_sample_count();
+	int32 channel_count() const { return k_channel_count; }
 
 private:
 	std::atomic<int32> m_write_position;
