@@ -8,6 +8,7 @@ void memory_zero(void* obj, size_t size)
 	memory_set(obj, 0, size);
 }
 
+
 void memory_set(void* dest, int value, size_t size)
 {
 	char* dst_ptr = static_cast<char*>(dest);
@@ -22,14 +23,36 @@ void memory_copy(void* dest, void const* src, size_t size)
 {
 	ASSERT(dest != nullptr);
 	ASSERT(src != nullptr);
-
+	
 	char* dst_ptr = static_cast<char*>(dest);
 	const char* src_ptr = static_cast<const char*>(src);
-	ASSERT(((dst_ptr + size) <= src_ptr)|| ((src_ptr + size) <= dst_ptr));
+	ASSERT(((dst_ptr + size) <= src_ptr) || ((src_ptr + size) <= dst_ptr));
 
-	for (size_t i = 0; i < size; ++i)
+	size_t size_remaining = size;
+
+	while (size_remaining >= sizeof(uint64))
 	{
-		dst_ptr[i] = src_ptr[i];
+		// I feel like we should be able to do this without the intermediary char cast, but I can't get it working yet
+		*reinterpret_cast<uint64*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint64*>(&src_ptr[size - size_remaining]);
+		size_remaining -= sizeof(uint64);
+	}
+
+	while (size_remaining >= sizeof(uint32))
+	{
+		*reinterpret_cast<uint32*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint32*>(&src_ptr[size - size_remaining]);
+		size_remaining -= sizeof(uint32);
+	}
+
+	while (size_remaining >= sizeof(uint16))
+	{
+		*reinterpret_cast<uint16*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint16*>(&src_ptr[size - size_remaining]);
+		size_remaining -= sizeof(uint16);
+	}
+
+	while (size_remaining > 0)
+	{
+		*reinterpret_cast<uint8*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint8*>(&src_ptr[size - size_remaining]);
+		size_remaining -= sizeof(uint8);
 	}
 }
 
@@ -41,18 +64,58 @@ void memory_move(void* dest, void const* src, size_t size)
 	char* dst_ptr = static_cast<char*>(dest);
 	const char* src_ptr = static_cast<const char*>(src);
 
+	size_t size_remaining = size;
+
 	if (dst_ptr < src_ptr)
 	{
-		for (size_t i = 0; i < size; i++)
+		while (size_remaining >= sizeof(uint64))
 		{
-			dst_ptr[i] = src_ptr[i];
+			*reinterpret_cast<uint64*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint64*>(&src_ptr[size - size_remaining]);
+			size_remaining -= sizeof(uint64);
+		}
+
+		while (size_remaining >= sizeof(uint32))
+		{
+			*reinterpret_cast<uint32*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint32*>(&src_ptr[size - size_remaining]);
+			size_remaining -= sizeof(uint32);
+		}
+
+		while (size_remaining >= sizeof(uint16))
+		{
+			*reinterpret_cast<uint16*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint16*>(&src_ptr[size - size_remaining]);
+			size_remaining -= sizeof(uint16);
+		}
+
+		while (size_remaining > 0)
+		{
+			*reinterpret_cast<uint8*>(&dst_ptr[size - size_remaining]) = *reinterpret_cast<const uint8*>(&src_ptr[size - size_remaining]);
+			size_remaining -= sizeof(uint8);
 		}
 	}
 	else if (dst_ptr > src_ptr)
 	{
-		for (size_t i = size; i > 0; i--)
+		while (size_remaining >= sizeof(uint64))
 		{
-			dst_ptr[i - 1] = src_ptr[i - 1];
+			*reinterpret_cast<uint64*>(&dst_ptr[size_remaining - sizeof(uint64)]) = *reinterpret_cast<const uint64*>(&src_ptr[size_remaining - sizeof(uint64)]);
+			size_remaining -= sizeof(uint64);
+		}
+
+		while (size_remaining >= sizeof(uint32))
+		{
+			*reinterpret_cast<uint32*>(&dst_ptr[size_remaining - sizeof(uint32)]) = *reinterpret_cast<const uint32*>(&src_ptr[size_remaining - sizeof(uint32)]);
+			size_remaining -= sizeof(uint32);
+		}
+
+		while (size_remaining >= sizeof(uint16))
+		{
+			*reinterpret_cast<uint16*>(&dst_ptr[size_remaining - sizeof(uint16)]) = *reinterpret_cast<const uint16*>(&src_ptr[size_remaining - sizeof(uint16)]);
+			size_remaining -= sizeof(uint16);
+		}
+
+		while (size_remaining > 0)
+		{
+			*reinterpret_cast<uint8*>(&dst_ptr[size_remaining - sizeof(uint8)]) = *reinterpret_cast<const uint8*>(&src_ptr[size_remaining - sizeof(uint8)]);
+			size_remaining -= sizeof(uint8);
 		}
 	}
 }

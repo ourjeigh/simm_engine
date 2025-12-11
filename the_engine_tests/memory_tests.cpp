@@ -46,13 +46,17 @@ TEST(MEMORY, CLEAR_STRUCT)
 
 TEST(MEMORY, MEMCOPY)
 {
-	int32 source[] = { 1,3,5,7,9 };
-	int32 dest[] = { 0,0,0,0,0 };
-	memory_copy(dest, source, sizeof(int32) * 5);
-
-	for (int32 i = 0; i < 5; i++)
+	for (int32 i = 0; i < 1000000; i++)
 	{
-		EXPECT_EQ(dest[i], source[i]);
+		const int32 length = 10;
+		int64 source[length] = { 1,3,5,7,9, 11, 13, 15, 17, 19 };
+		int64 dest[length] = { 0 };
+		memory_copy(dest, source, sizeof(int64) * length);
+
+		for (int32 i = 0; i < length; i++)
+		{
+			EXPECT_EQ(dest[i], source[i]);
+		}
 	}
 }
 

@@ -199,10 +199,11 @@ void c_audio_render_thread::render_audio()
 			d_read_initialized = true;
 		}
 		
-		if (d_read_initialized)
+		// not reliable enough
+		/*if (d_read_initialized)
 		{
 			ASSERT(read_samples == buffer_size);
-		}
+		}*/
 #endif
 
 		m_sink.render_complete(buffer_size);

@@ -2,7 +2,6 @@
 #ifdef PLATFORM_WINDOWS
 
 #include "audio_sink.h"
-#include "config.h"
 #include "logging/logging.h"
 
 #include <Windows.h>
@@ -37,7 +36,6 @@ const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 		return; \
 	} \
 } while (0)
-
 
 IAudioClient* g_audio_client;
 IAudioRenderClient* g_audio_render_client;

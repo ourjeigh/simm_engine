@@ -91,12 +91,43 @@ void create_window(HINSTANCE instance)
 
 LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPARAM lParam)
 {
+	if (msg == WM_CLOSE)
+	{
+		PostQuitMessage(0);
+		engine_term();
+		return 0;
+	}
+
 	if (msg == WM_DESTROY)
 	{
 		PostQuitMessage(0);
+		engine_term();
 		return 0;
 	}
-	
+
+	if (msg == WM_SIZE)
+	{
+		//SIZE_RESTORED
+		//SIZE_MINIMIZED
+		//SIZE_MAXIMIZED
+		//SIZE_MAXSHOW
+		//SIZE_MAXHIDE
+		return 0;
+	}
+
+	if (msg == WM_SETFOCUS || msg == WM_KILLFOCUS)
+	{
+		// handle focus change
+		return 0;
+	}
+
+	if (msg == WM_QUIT)
+	{
+		PostQuitMessage(0);
+		engine_term();
+		return 0;
+	}
+
 	// move to some kind of render?
 	if (msg == WM_PAINT)
 	{
