@@ -33,7 +33,7 @@ void log(e_log_level level, const char* format, ...)
 
 	c_string<k_max_log_length> output;
 
-	output.print("%llu %2.3f %s: ", current_time, time_since_start.get_duration_seconds(), get_log_level_string(level));
+	output.printf("%llu %2.3f %s: ", current_time, time_since_start.get_duration_seconds(), get_log_level_string(level));
 
 	va_list args;
 	va_start(args, format);

@@ -128,3 +128,49 @@ TEST(C_STACK, C_STACK_ASSERTS)
 
 	EXPECT_DEATH(stack.push(0), ".*");
 }
+
+TEST(C_BIT_ARRAY, SET_TEST)
+{
+	enum e_test_enum
+	{
+		test_enum_val_1,
+		test_enum_val_2,
+		test_enum_val_3,
+		test_enum_val_4,
+
+		k_test_enum_count
+	};
+	typedef c_bit_array<k_test_enum_count> t_test_flags;
+	t_test_flags flags;
+
+	EXPECT_TRUE(flags.none());
+
+	flags.set(test_enum_val_2, true);
+
+	EXPECT_TRUE(flags.test(test_enum_val_2));
+	EXPECT_FALSE(flags.test(test_enum_val_1));
+
+	flags.clear();
+	EXPECT_FALSE(flags.any());
+}
+
+TEST(C_BIT_ARRAY, TEST_ALL)
+{
+	enum e_test_enum
+	{
+		test_enum_val_1,
+		test_enum_val_2,
+		test_enum_val_3,
+		test_enum_val_4,
+
+		k_test_enum_count
+	};
+	typedef c_bit_array<k_test_enum_count> t_test_flags;
+	t_test_flags flags;
+	flags.set(test_enum_val_1, true);
+	flags.set(test_enum_val_2, true);
+	flags.set(test_enum_val_3, true);
+	flags.set(test_enum_val_4, true);
+
+	EXPECT_TRUE(flags.all());
+}

@@ -97,8 +97,6 @@ void c_audio_engine_thread::audio_engine_thread_entry_point(c_audio_engine_threa
 			sleep_for_milliseconds(real64_to_uint32(sleep_duration_milliseconds));
 		}
 
-		//ASSERT(time_span_ms < update_period_ms);
-
 		while (update_period_ms - timer.get_time_span()->get_duration_milliseconds() > 0.5f)
 		{
 			NOP();
@@ -118,7 +116,6 @@ void c_audio_engine_thread::process_audio()
 	m_HACK_test_sine.get_samples(mix_buffer.get_channel(0), mix_buffer.size());
 	memory_copy(mix_buffer.get_channel(1), mix_buffer.get_channel(0), sizeof(real32) * mix_buffer.size());
 
-	//m_HACK_test_noise.get_samples(mix_buffer.get_channel(1), 512);
 	int32 samples_written = g_audio_output_ring_buffer.write(&mix_buffer, mix_buffer.size());
 
 	if (samples_written < mix_buffer.size())

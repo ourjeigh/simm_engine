@@ -1,7 +1,6 @@
+#include "asserts.h"
 #include "memory/memory.h"
-//#include <string.h>
-#include <logging/logging.h>
-#include <asserts.h>
+#include <types/types.h>
 
 void memory_zero(void* obj, size_t size)
 {

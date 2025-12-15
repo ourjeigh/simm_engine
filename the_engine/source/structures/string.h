@@ -21,6 +21,9 @@ inline int32 expand_args_string(char* buffer, int32 size, const char* format, va
 	return length;
 }
 
+// TODO make this c_static_string and make it have a c_stack<char, k_max_size>
+// then make the base c_string have all the functionality and take in a data member
+
 template<int32 k_max_size>
 class c_string : public c_stack<char, k_max_size>
 {
@@ -32,7 +35,18 @@ public:
 		terminate();
 	}
 
-	void print(const char* format, ...)
+	void print(const char* string)
+	{
+		if (string != nullptr)
+		{
+			while (*string != k_null_char)
+			{
+				this->push(*string++);
+			}
+		}
+	}
+
+	void printf(const char* format, ...)
 	{
 		va_list args;
 		va_start(args, format);
@@ -62,7 +76,10 @@ public:
 
 	const char* get_const_char()
 	{
-		ASSERT(this->top() == k_null_char);
+		if (this->empty())
+		{
+			return nullptr;
+		}
 
 		return &this->m_data[0];
 	}
@@ -76,5 +93,12 @@ private:
 		}
 	}
 };
+
+typedef c_string<128> t_string_128;
+typedef c_string<256> t_string_256;
+typedef c_string<512> t_string_512;
+typedef c_string<1024> t_string_1024;
+
+int32 string_compare(const char* left, const char* right);
 
 #endif __STRING_H__

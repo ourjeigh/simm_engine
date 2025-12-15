@@ -83,7 +83,7 @@ private:
 	{
 		uint8 u_keycode_num;
 		char u_keycode_char;
-		e_input_event_key_special r_keycode_special;
+		e_input_event_key_special u_keycode_special;
 	};
 };
 

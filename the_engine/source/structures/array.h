@@ -15,12 +15,13 @@ public:
 		iterator(t_type* ptr) : m_ptr(ptr) {}
 		t_type& operator*() const { return *m_ptr; }
 		t_type* operator->() { return m_ptr; }
-		iterator& operator++() { m_ptr++; return *this; }
+		iterator& operator++() { ++m_ptr; return *this; }
 		iterator operator++(int) { iterator temp = *this; ++(*this); return temp; }
-		//friend bool operator== (const iterator& a, const iterator& b) { return a.m_ptr == b.m_ptr; };
-		//friend bool operator!= (const iterator& a, const iterator& b) { return !(a == b); };
+		iterator& operator--() { --m_ptr; return *this; }
+		iterator operator--(int) { iterator temp = *this; --(*this); return temp; }
 		bool operator== (const iterator& other) const { return m_ptr == other.m_ptr; }
 		bool operator!= (const iterator& other) const { return !(*this == other); }
+
 	private:
 		t_type* m_ptr;
 	};
@@ -65,6 +66,16 @@ public:
 	iterator begin() { return iterator(&m_data[0]); }
 	iterator end() { return iterator(&m_data[k_max_size]); }
 
+	// start inclusive
+	// end exclusive
+	void copy_from(c_array<t_type, k_max_size>& other, int32 start, int32 end)
+	{
+		ASSERT(start < end);
+		int32 count = (end - start);
+
+		memory_copy(m_data, &other.m_data[start], sizeof(t_type) * count);
+	}
+
 protected:
 	void assert_valid_index(int32 index) const
 	{
@@ -81,7 +92,6 @@ template<class t_type, int32 k_max_size>
 class c_stack : public c_array<t_type, k_max_size>
 {
 public:
-
 	using typename c_array<t_type, k_max_size>::iterator;
 
 	c_stack<t_type, k_max_size>() : m_top(-1) {}
@@ -119,8 +129,147 @@ public:
 	iterator begin() { return c_array<t_type, k_max_size>::begin(); }
 	iterator end() { return iterator(&this->m_data[m_top + 1]); }
 
+	void copy_from(c_stack<t_type, k_max_size>& other, int32 start, int32 end)
+	{
+		this->c_array<t_type, k_max_size>::copy_from(other, start, end);
+		m_top = end - start;
+	}
+
 protected:
 	int32 m_top;
 };
 
+
+template <size_t k_size>
+class c_bit_array
+{
+public:
+	c_bit_array() { clear(); }
+
+	void clear()
+	{
+		zero_object(m_data);
+	}
+
+	void set(uint32 index, bool value)
+	{
+		if (value)
+		{
+			m_data[get_data_index(index)] |= get_index_mask(index);
+		}
+		else
+		{
+			m_data[get_data_index(index)] &= ~get_index_mask(index);
+		}
+	}
+
+	void flip(uint32 index)
+	{
+		m_data[get_data_index(index)] ^= get_index_mask(index);
+	}
+
+	bool test(uint32 index)
+	{
+		return m_data[get_data_index(index)] & get_index_mask(index);
+	}
+
+	bool any()
+	{
+		for (uint32 i = 0; i < num_chars; i++)
+		{
+			if (m_data[i] != 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool all()
+	{
+		for (uint32 i = 0; i < num_chars - 1; i++)
+		{
+			if (m_data[i] != k_char_max)
+			{
+				return false;
+			}
+		}
+
+		// this could be faster
+		uint32 last_set = k_size % 8;
+		for (uint32 i = k_size - last_set; i < k_size; i++)
+		{
+			if (!test(i))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool none()
+	{
+		return !any();
+	}
+
+	uint32 count()
+	{
+		int out_count = 0;
+
+		for (uint32 i = 0; i < num_chars; i++)
+		{
+			// shift left to compare with storage bit
+			// then shift back right since the comparison
+			// will only be the tested bit, either 1 or 0.
+			out_count += (m_data[i] & (1 << 0)) >> 0;
+			out_count += (m_data[i] & (1 << 1)) >> 1;
+			out_count += (m_data[i] & (1 << 2)) >> 2;
+			out_count += (m_data[i] & (1 << 3)) >> 3;
+			out_count += (m_data[i] & (1 << 4)) >> 4;
+			out_count += (m_data[i] & (1 << 5)) >> 5;
+			out_count += (m_data[i] & (1 << 6)) >> 6;
+			out_count += (m_data[i] & (1 << 7)) >> 7;
+		}
+
+		return out_count;
+	}
+
+	void print()
+	{
+		//t_string_128 temp_string;
+		//for (int i = 0; i < num_chars; i++)
+		//{
+		//	// shift left to compare with storage bit
+		//	// then shift back right since the comparison
+		//	// will only be the tested bit, either 1 or 0.
+		//	temp_string.append("%i %i %i %i %i %i %i %i",
+		//		((m_data[i] & (1 << 0)) >> 0),
+		//		((m_data[i] & (1 << 1)) >> 1),
+		//		((m_data[i] & (1 << 2)) >> 2),
+		//		((m_data[i] & (1 << 3)) >> 3),
+		//		((m_data[i] & (1 << 4)) >> 4),
+		//		((m_data[i] & (1 << 5)) >> 5),
+		//		((m_data[i] & (1 << 6)) >> 6),
+		//		((m_data[i] & (1 << 7)) >> 7));
+		//}
+	}
+private:
+	// size of 8 needs 1 char, size of 9 needs 2
+	static const uint32 num_chars = (k_size / 9) + 1;
+
+	// we use a char because that causes the least wasted
+	// storage for cases where the size is not perfectly
+	// divisible (eg size=9 would waste 6 bytes if m_data were an int)
+	char m_data[num_chars];
+
+	char get_index_mask(int index) { return 1 << (index % 8); }
+	uint32 get_data_index(int index) { return index / 8; }
+};
+
+template<size_t k_size>
+class c_flags : public c_bit_array<k_size>
+{
+};
 #endif //__ARRAY_H__

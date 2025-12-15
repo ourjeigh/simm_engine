@@ -4,8 +4,6 @@
 #include "input/input_system.h"
 #include "asserts.h"
 
-const int32 k_max_game_systems = 12;
-
 static c_input_system g_input_system;
 static c_audio_system g_audio_system;
 

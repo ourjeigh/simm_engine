@@ -22,6 +22,7 @@ typedef float real32;
 typedef double real64;
 
 const byte k_byte_max = 0xFF;
+const char k_char_max = 0xFF;
 
 const int8 k_int8_max = 0x7F;
 const int16 k_int16_max = 0x7FFF;

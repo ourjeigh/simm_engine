@@ -1,0 +1,60 @@
+#ifndef __FILE_H__
+#define __FILE_H__
+#pragma once
+
+#include "structures/string.h"
+#include "structures/array.h"
+
+const uint32 k_file_path_max = 256;
+
+class c_file_path
+{
+public:
+	c_file_path() : m_file_name_index(0), m_file_ext_index(0) { m_data.clear(); }
+	c_file_path(const t_string_256 path);
+	c_file_path(const c_file_path& other);
+	~c_file_path() {}
+
+	bool exists();
+	const char* get_full_path() { return m_data.get_const_char(); }
+	void get_file_name(t_string_256& out_file_name);
+	void get_file_ext(t_string_256& out_file_ext);
+	void get_file_name_no_ext(t_string_256& out_file_name);
+	void get_directory_path(t_string_256& out_directory_path);
+	void get_directory_name(t_string_256& out_directory_name);
+private:
+	void parse();
+
+	t_string_256 m_data;
+	uint8 m_file_name_index;
+	uint8 m_file_ext_index;
+};
+
+enum e_file_open_mode
+{
+	file_open_mode_read,
+	file_open_mode_write,
+	file_open_mode_append,
+	file_open_mode_replace,
+	file_open_mode_exclusive,
+
+	k_file_open_mode_count
+};
+typedef c_flags<k_file_open_mode_count> t_file_open_mode_flags;
+
+class c_file
+{
+public:
+	c_file() : m_os_file_handle(nullptr) { }
+	bool open(c_file_path file_path, t_file_open_mode_flags flags);
+	bool close();
+
+protected:
+	c_file_path m_path;
+	void* m_os_file_handle;
+};
+
+char get_path_separator();
+char get_ext_separator();
+
+#endif // __FILE_H__

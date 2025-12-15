@@ -2,8 +2,6 @@
 #define __MEMORY_H__
 #pragma once
 
-#include "types/types.h"
-
 #define zero_object(obj) memory_zero(&obj, sizeof(obj))
 
 void memory_zero(void* obj, size_t size);
