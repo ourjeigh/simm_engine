@@ -5,17 +5,14 @@
 c_file_path::c_file_path(const t_string_256 path)
 {
 	m_data = path;
-	parse();
 }
 
 c_file_path::c_file_path(const c_file_path& other)
 {
 	m_data = other.m_data;
-	m_file_name_index = other.m_file_name_index;
-	m_file_ext_index = other.m_file_ext_index;
 }
 
-bool c_file_path::exists()
+bool c_file_path::exists() const
 {
 	bool result = false;
 
@@ -33,67 +30,99 @@ bool c_file_path::exists()
 	return result;
 }
 
-void c_file_path::get_file_name(t_string_256& out_file_name)
+void c_file_path::get_file_name(t_string_256& out_file_name) const
 {
 	out_file_name.clear();
-	out_file_name.copy_from(m_data, m_file_name_index, m_data.used());
+	uint8 directory_name_index;
+	uint8 file_name_index;
+	uint8 ext_index;
+	split_path(directory_name_index, file_name_index, ext_index);
+
+	out_file_name.copy_from(m_data, file_name_index, m_data.used());
 }
 
-void c_file_path::get_file_ext(t_string_256& out_file_ext)
+void c_file_path::get_file_ext(t_string_256& out_file_ext) const
 {
 	out_file_ext.clear();
-	out_file_ext.copy_from(m_data, m_file_ext_index, m_data.used());
+
+	uint8 directory_name_index;
+	uint8 file_name_index;
+	uint8 ext_index;
+	split_path(directory_name_index, file_name_index, ext_index);
+	
+	out_file_ext.copy_from(m_data, ext_index, m_data.used());
 }
 
-void c_file_path::get_file_name_no_ext(t_string_256& out_file_name)
+void c_file_path::get_file_name_no_ext(t_string_256& out_file_name) const
 {
 	out_file_name.clear();
-	out_file_name.copy_from(m_data, m_file_name_index, m_file_ext_index - 1);
+
+	uint8 directory_name_index;
+	uint8 file_name_index;
+	uint8 ext_index;
+	split_path(directory_name_index, file_name_index, ext_index);
+
+	out_file_name.copy_from(m_data, file_name_index, ext_index - 1);
 }
 
-void c_file_path::get_directory_path(t_string_256& out_directory_path)
+void c_file_path::get_directory_path(t_string_256& out_directory_path) const
 {
 	out_directory_path.clear();
-	out_directory_path.copy_from(m_data, 0, m_file_name_index - 1);
+
+	uint8 directory_name_index;
+	uint8 file_name_index;
+	uint8 ext_index;
+	split_path(directory_name_index, file_name_index, ext_index);
+
+	out_directory_path.copy_from(m_data, 0, file_name_index - 1);
 }
 
-void c_file_path::get_directory_name(t_string_256& out_directory_name)
+void c_file_path::get_directory_name(t_string_256& out_directory_name) const
 {
 	out_directory_name.clear();
 
-	for (int32 i = m_file_name_index - 2; i >= 0; i--)
-	{
-		if (m_data[i] == get_path_separator())
-		{
-			out_directory_name.copy_from(m_data, i + 1, m_file_name_index - 1);
-			return;
-		}
-	}
+	uint8 directory_name_index;
+	uint8 file_name_index;
+	uint8 ext_index;
+	split_path(directory_name_index, file_name_index, ext_index);
 
-	HALT("didn't find directory name");
+	out_directory_name.copy_from(m_data, directory_name_index, file_name_index - 1);
 }
 
-void c_file_path::parse()
+void c_file_path::split_path(uint8& out_directory_name_index, uint8& out_filename_index, uint8& out_ext_index) const
 {
-	for (uint8 i = 0; i < m_data.used(); i++)
+	out_directory_name_index = k_invalid;
+	out_filename_index = k_invalid;
+	out_ext_index = k_invalid;
+
+	for (int16 i = m_data.used() - 1; i >= 0; i--)
 	{
 		char ch = m_data[i];
-
-		if (ch == get_path_separator())
+		if (out_ext_index == k_invalid && ch == get_ext_separator())
 		{
-			// the last one will be the direct parent index
-			m_file_name_index = i + 1;
+			out_ext_index = i + 1;
 		}
-		else if (ch == get_ext_separator())
+		else if (out_filename_index == k_invalid && ch == get_path_separator())
 		{
-			m_file_ext_index = i + 1;
+			out_filename_index = i + 1;
+		}
+		else if (out_directory_name_index == k_invalid &&
+			out_filename_index != k_invalid &&
+			ch == get_path_separator())
+		{
+			out_directory_name_index = i + 1;
+			break;
 		}
 	}
+
+	ASSERT(out_directory_name_index != k_invalid);
+	ASSERT(out_filename_index != k_invalid);
+	ASSERT(out_ext_index != k_invalid);
 }
 
-bool c_file::open(c_file_path file_path, t_file_open_mode_flags flags)
+bool c_file::open(const c_file_path& file_path, t_file_open_mode_flags flags)
 {
-	ASSERT(m_os_file_handle == nullptr);
+	ASSERT(!is_open());
 
 	bool result = false;
 
@@ -111,42 +140,66 @@ bool c_file::open(c_file_path file_path, t_file_open_mode_flags flags)
 		access |= GENERIC_WRITE;
 	}
 
-	// TODO handle read and write sharing separately (maybe delete??)
+	// TODO handle read and write sharing separately (maybe delete also??)
 	DWORD share_mode = flags.test(file_open_mode_exclusive) ? 0 : FILE_SHARE_READ | FILE_SHARE_WRITE;
-
 	LPSECURITY_ATTRIBUTES security = nullptr;
-
 	DWORD creation_disposition = OPEN_ALWAYS;
+	DWORD attributes = FILE_ATTRIBUTE_NORMAL;
+	HANDLE template_file = nullptr;
 
 	file_handle = CreateFileA(
-		file_path.get_full_path(), // Filename
-		access,    // Desired access
-		share_mode, // Share flags
-		security,             // Security Attributes
-		OPEN_ALWAYS,      // Creation Disposition
-		0,                // Flags and Attributes
-		NULL);           // OVERLAPPED pointer
+		file_path.get_full_path(),
+		access,
+		share_mode,
+		security,
+		creation_disposition,
+		attributes,
+		template_file);
 	
 	if (file_handle != INVALID_HANDLE_VALUE)
 	{
 		result = true;
-		m_os_file_handle = file_handle;
+		m_file_handle = file_handle;
+		m_flags = flags;
 	}
 
-	return false;
+	return result;
 }
 
 bool c_file::close()
 {
 	bool result = false;
-	if (m_os_file_handle != nullptr)
+	if (m_file_handle != nullptr)
 	{
-		CloseHandle(reinterpret_cast<HANDLE>(m_os_file_handle));
+		CloseHandle(m_file_handle);
+		m_file_handle = nullptr;
 		result = true;
 	}
 
 	return result;
 }
+
+bool c_file::read()
+{
+	bool result = false;
+
+	char temp[1024];
+
+	DWORD        nNumberOfBytesToRead = 1024;
+	LPDWORD      lpNumberOfBytesRead = 0;
+	LPOVERLAPPED lpOverlapped = nullptr;
+
+	result = ReadFile(
+		m_file_handle,
+		temp,
+		nNumberOfBytesToRead,
+		lpNumberOfBytesRead,
+		lpOverlapped
+	);
+
+	return result;
+}
+
 
 char get_path_separator()
 {

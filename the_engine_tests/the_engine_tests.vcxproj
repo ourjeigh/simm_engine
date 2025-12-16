@@ -92,6 +92,7 @@
     <ClCompile Include="string_tests.cpp" />
     <ClCompile Include="thread_tests.cpp" />
     <ClCompile Include="time_tests.cpp" />
+    <ClCompile Include="type_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

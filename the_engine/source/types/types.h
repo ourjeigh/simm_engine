@@ -21,6 +21,16 @@ typedef unsigned long long uint64;
 typedef float real32;
 typedef double real64;
 
+enum e_invalid
+{
+	k_invalid = -1
+};
+template<typename t_type> inline bool operator==(const t_type& lhs, const e_invalid& rhs) { return static_cast<t_type>(k_invalid) == lhs; }
+template<typename t_type> inline bool operator==(const e_invalid& lhs, const t_type& rhs) { return static_cast<t_type>(k_invalid) == rhs; }
+template<typename t_type> inline bool operator!=(const t_type& lhs, const e_invalid& rhs) { return !(lhs == rhs); }
+template<typename t_type> inline bool operator!=(const e_invalid& lhs, const t_type& rhs) { return !(lhs == rhs); }
+
+
 const byte k_byte_max = 0xFF;
 const char k_char_max = 0xFF;
 

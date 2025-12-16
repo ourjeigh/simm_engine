@@ -28,6 +28,14 @@ template<int32 k_max_size>
 class c_string : public c_stack<char, k_max_size>
 {
 public:
+	c_string() {}
+
+	constexpr c_string(const char* string)
+	{
+		this->clear();
+		print(string);
+	}
+
 	void print_va(const char* format, va_list args)
 	{
 		int length = expand_args_string(this->m_data, k_max_size, format, args);
@@ -48,6 +56,7 @@ public:
 
 	void printf(const char* format, ...)
 	{
+		// TODO: write custom va_args
 		va_list args;
 		va_start(args, format);
 		print_va(format, args);
@@ -74,7 +83,7 @@ public:
 		va_end(args);
 	}
 
-	const char* get_const_char()
+	const char* get_const_char() const
 	{
 		if (this->empty())
 		{

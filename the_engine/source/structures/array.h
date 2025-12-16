@@ -68,7 +68,7 @@ public:
 
 	// start inclusive
 	// end exclusive
-	void copy_from(c_array<t_type, k_max_size>& other, int32 start, int32 end)
+	void copy_from(const c_array<t_type, k_max_size>& other, int32 start, int32 end)
 	{
 		ASSERT(start < end);
 		int32 count = (end - start);
@@ -121,15 +121,15 @@ public:
 		return &this->m_data[index];
 	}
 
-	int32 used() { return m_top + 1; }
-	bool empty() { return m_top == -1; }
-	bool full() { return m_top == k_max_size - 1; }
+	int32 used() const { return m_top + 1; }
+	bool empty() const { return m_top == -1; }
+	bool full() const { return m_top == k_max_size - 1; }
 	void clear() { m_top = -1; }
 
 	iterator begin() { return c_array<t_type, k_max_size>::begin(); }
 	iterator end() { return iterator(&this->m_data[m_top + 1]); }
 
-	void copy_from(c_stack<t_type, k_max_size>& other, int32 start, int32 end)
+	void copy_from(const c_stack<t_type, k_max_size>& other, int32 start, int32 end)
 	{
 		this->c_array<t_type, k_max_size>::copy_from(other, start, end);
 		m_top = end - start;
@@ -271,5 +271,6 @@ private:
 template<size_t k_size>
 class c_flags : public c_bit_array<k_size>
 {
+	// TODO: make a constructor that can take initial values
 };
 #endif //__ARRAY_H__
