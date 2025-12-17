@@ -181,10 +181,12 @@ bool c_file::close()
 
 bool c_file::read()
 {
+	ASSERT(is_open());
+	ASSERT(m_flags.test(file_open_mode_read));
+
 	bool result = false;
 
-	char temp[1024];
-
+	byte temp[1024];
 	DWORD        nNumberOfBytesToRead = 1024;
 	LPDWORD      lpNumberOfBytesRead = 0;
 	LPOVERLAPPED lpOverlapped = nullptr;

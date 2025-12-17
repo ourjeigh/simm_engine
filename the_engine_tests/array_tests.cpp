@@ -38,7 +38,7 @@ TEST(C_ARRAY, C_ARRAY_SIZE)
 {
 	const int32 size = 10;
 	c_array<real32, size> array;
-	EXPECT_EQ(size, array.size());
+	EXPECT_EQ(size, array.capacity());
 }
 
 TEST(C_ARRAY, C_ARRAY_ITERATORS)
@@ -73,6 +73,40 @@ TEST(C_ARRAY, C_ARRAY_ASSERTS)
 	const int32 size = 10;
 	c_array<real32, size> array;
 	EXPECT_DEATH({ array[12] = 5.0f; }, ".*");
+}
+
+TEST(C_ARRAY_REF, MAKE_REFERENCE)
+{
+	c_array<int32, 5> array1;
+
+	for (int32 i = 0; i < 5; i++)
+	{
+		array1[i] = i + 1;
+	}
+
+	c_array_reference<int32> ref = array1.make_reference();
+
+	for (int32 i = 0; i < 5; i++)
+	{
+		EXPECT_EQ(ref[i], i + 1);
+	}
+}
+
+TEST(C_ARRAY_REF, MAKE_REFERENCE_CONST)
+{
+	c_array<int32, 5> array1;
+
+	for (int32 i = 0; i < 5; i++)
+	{
+		array1[i] = i + 1;
+	}
+
+	c_array_reference<const int32> ref = array1.make_reference_const();
+
+	for (int32 i = 0; i < 5; i++)
+	{
+		EXPECT_EQ(ref[i], i + 1);
+	}
 }
 
 TEST(C_STACK, C_STACK_PUSH_POP_TOP)

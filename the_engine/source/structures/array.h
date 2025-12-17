@@ -6,8 +6,8 @@
 #include "asserts.h"
 #include "memory/memory.h"
 
-template<class t_type, int32 k_max_size>
-class c_array
+template<class t_derived_array, class t_type>
+class i_array
 {
 public:
 	struct iterator
@@ -25,6 +25,70 @@ public:
 	private:
 		t_type* m_ptr;
 	};
+
+	t_type& operator[](int32 index)
+	{
+		assert_valid_index(index);
+		return data()[index];
+	}
+
+	const t_type& operator[](int32 index) const
+	{
+		assert_valid_index(index);
+		return data()[index];
+	}
+
+	iterator begin() { return iterator(&data()[0]); }
+	iterator end() { return iterator(&data()[capacity()]); }
+
+	int32 capacity() const
+	{
+		return static_cast<const t_derived_array*>(this)->capacity();
+	}
+
+protected:
+	t_type* data()
+	{
+		return static_cast<t_derived_array*>(this)->data();
+	}
+
+	const t_type* data() const
+	{
+		return static_cast<const t_derived_array*>(this)->data();
+	}
+
+
+private:
+
+	void assert_valid_index(int32 index) const
+	{
+		ASSERT(index >= 0);
+		ASSERT(index < capacity());
+	}
+};
+
+template<class t_type>
+class c_array_reference : public i_array<c_array_reference<t_type>, t_type>
+{
+public:
+	c_array_reference(t_type* data, int32 capacity) : m_data_ref(data), m_capacity(capacity) {}
+	int32 capacity() const { return m_capacity; }
+
+protected:
+	friend class i_array<c_array_reference<t_type>, t_type>;
+
+	t_type* data() { return m_data_ref; }
+	const t_type* data() const { return m_data_ref; }
+
+private:
+	t_type* m_data_ref;
+	int32 m_capacity;
+};
+
+template<class t_type, int32 k_max_size>
+class c_array : public i_array<c_array<t_type, k_max_size>, t_type>
+{
+public:
 
 	c_array<t_type, k_max_size>() { zero_object(m_data); }
 	~c_array<t_type, k_max_size>() {}
@@ -49,25 +113,9 @@ public:
 		return *this;
 	}
 
-	int32 size() { return k_max_size; }
+	int32 capacity() const { return k_max_size; }
 
-	t_type& operator[](int32 index)
-	{
-		assert_valid_index(index);
-		return m_data[index];
-	}
-
-	const t_type& operator[](int32 index) const
-	{
-		assert_valid_index(index);
-		return m_data[index];
-	}
-
-	iterator begin() { return iterator(&m_data[0]); }
-	iterator end() { return iterator(&m_data[k_max_size]); }
-
-	// start inclusive
-	// end exclusive
+	// can this move to the interface?
 	void copy_from(const c_array<t_type, k_max_size>& other, int32 start, int32 end)
 	{
 		ASSERT(start < end);
@@ -76,17 +124,29 @@ public:
 		memory_copy(m_data, &other.m_data[start], sizeof(t_type) * count);
 	}
 
-protected:
-	void assert_valid_index(int32 index) const
+	c_array_reference<t_type> make_reference()
 	{
-		ASSERT(index >= 0);
-		ASSERT(index < k_max_size);
+		return c_array_reference<t_type>(m_data, k_max_size);
 	}
 
-	t_type m_data[k_max_size];
-	// how can we track usage in debug builds?
-};
+	c_array_reference<const t_type> make_reference() const
+	{
+		return { m_data, k_max_size };
+	}
 
+	const c_array_reference<const t_type> make_reference_const() const
+	{
+		return { m_data, k_max_size };
+	}
+
+protected:
+	friend class i_array<c_array<t_type, k_max_size>, t_type>;
+
+	t_type* data() { return m_data; }
+	const t_type* data() const { return m_data; }
+
+	t_type m_data[k_max_size];
+};
 
 template<class t_type, int32 k_max_size>
 class c_stack : public c_array<t_type, k_max_size>

@@ -89,7 +89,8 @@ TEST(C_FILE, OPEN_SUCESS)
 
 TEST(C_FILE, READ)
 {
-	t_string_256 file_path_string(k_test_file_path_real);
+	const char* path = R"(C:\Users\RJ\Videos\maggilizer\maggilizer_demo_trimmed.mp4)";
+	t_string_256 file_path_string(path);
 	c_file_path file_path(file_path_string);
 	t_file_open_mode_flags flags;
 

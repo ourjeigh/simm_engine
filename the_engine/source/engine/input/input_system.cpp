@@ -72,19 +72,19 @@ const c_key_state* input_system_get_key_state(e_input_keycode key)
 	if (k_input_key_first_num <= key && key <= k_input_key_last_num)
 	{
 		int32 index = key - static_cast<int32>(k_input_key_first_num);
-		ASSERT(0 <= index && index < g_input_state.num_key_states.size());
+		ASSERT(0 <= index && index < g_input_state.num_key_states.capacity());
 		return &g_input_state.num_key_states[index];
 	}
 	else if (k_input_key_first_char <= key && key <= k_input_key_last_char)
 	{
 		int32 index = key - static_cast<int32>(k_input_key_first_char);
-		ASSERT(0 <= index && index < g_input_state.char_key_states.size());
+		ASSERT(0 <= index && index < g_input_state.char_key_states.capacity());
 		return &g_input_state.char_key_states[index];
 	}
 	else if (k_input_key_first_special <= key && key <= k_input_key_last_special)
 	{
 		int32 index = key - static_cast<int32>(k_input_key_first_special);
-		ASSERT(0 <= index && index < g_input_state.special_key_states.size());
+		ASSERT(0 <= index && index < g_input_state.special_key_states.capacity());
 		return &g_input_state.special_key_states[index];
 	}
 	else
@@ -148,7 +148,7 @@ void process_input_event_queue_internal()
 		case _input_event_key_type_num:
 		{
 			int32 index = event.keycode_num;
-			ASSERT(0 <= index && index < g_input_state.num_key_states.size());
+			ASSERT(0 <= index && index < g_input_state.num_key_states.capacity());
 			g_input_state.num_key_states[index].set_key_state(
 				event.event_type == _input_event_type_key_down,
 				event.timestamp);
@@ -157,7 +157,7 @@ void process_input_event_queue_internal()
 		case _input_event_key_type_char:
 		{
 			int32 index = event.keycode_char - 'A';
-			ASSERT(0 <= index && index < g_input_state.char_key_states.size());
+			ASSERT(0 <= index && index < g_input_state.char_key_states.capacity());
 			g_input_state.char_key_states[index].set_key_state(
 				event.event_type == _input_event_type_key_down,
 				event.timestamp);
@@ -166,7 +166,7 @@ void process_input_event_queue_internal()
 		case _input_event_key_type_special:
 		{
 			int32 index = static_cast<int32>(event.keycode_special);
-			ASSERT(0 <= index && index < g_input_state.special_key_states.size());
+			ASSERT(0 <= index && index < g_input_state.special_key_states.capacity());
 			g_input_state.special_key_states[index].set_key_state(
 				event.event_type == _input_event_type_key_down,
 				event.timestamp);
