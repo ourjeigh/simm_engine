@@ -45,8 +45,7 @@ public:
 	{
 		return static_cast<const t_derived_array*>(this)->capacity();
 	}
-
-protected:
+	
 	t_type* data()
 	{
 		return static_cast<t_derived_array*>(this)->data();
@@ -57,6 +56,20 @@ protected:
 		return static_cast<const t_derived_array*>(this)->data();
 	}
 
+	template<class t_other_derived_type>
+	void copy_from_range(const i_array<t_other_derived_type, t_type>& other, int32 start, int32 end)
+	{
+		ASSERT(start >= 0);
+		ASSERT(end <= other.capacity());
+		ASSERT(start < end);
+		
+		int32 count = (end - start);
+		assert_valid_index(count - 1);
+
+		memory_copy(data(), &other.data()[start], sizeof(t_type) * count);
+	}
+
+protected:
 
 private:
 
@@ -73,14 +86,14 @@ class c_array_reference : public i_array<c_array_reference<t_type>, t_type>
 public:
 	c_array_reference(t_type* data, int32 capacity) : m_data_ref(data), m_capacity(capacity) {}
 	int32 capacity() const { return m_capacity; }
-
-protected:
-	friend class i_array<c_array_reference<t_type>, t_type>;
-
 	t_type* data() { return m_data_ref; }
 	const t_type* data() const { return m_data_ref; }
 
+protected:
+
 private:
+	friend class i_array<c_array_reference<t_type>, t_type>;
+	
 	t_type* m_data_ref;
 	int32 m_capacity;
 };
@@ -116,13 +129,13 @@ public:
 	int32 capacity() const { return k_max_size; }
 
 	// can this move to the interface?
-	void copy_from(const c_array<t_type, k_max_size>& other, int32 start, int32 end)
+	/*void copy_from(const c_array<t_type, k_max_size>& other, int32 start, int32 end)
 	{
 		ASSERT(start < end);
 		int32 count = (end - start);
 
 		memory_copy(m_data, &other.m_data[start], sizeof(t_type) * count);
-	}
+	}*/
 
 	c_array_reference<t_type> make_reference()
 	{
@@ -189,9 +202,9 @@ public:
 	iterator begin() { return c_array<t_type, k_max_size>::begin(); }
 	iterator end() { return iterator(&this->m_data[m_top + 1]); }
 
-	void copy_from(const c_stack<t_type, k_max_size>& other, int32 start, int32 end)
+	void copy_from_range(const c_stack<t_type, k_max_size>& other, int32 start, int32 end)
 	{
-		this->c_array<t_type, k_max_size>::copy_from(other, start, end);
+		this->c_array<t_type, k_max_size>::copy_from_range(other, start, end);
 		m_top = end - start;
 	}
 

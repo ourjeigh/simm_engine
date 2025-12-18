@@ -3,6 +3,7 @@
 #include "threads/threads.cpp"
 #include "logging/logging.cpp"
 #include <time/time.h>
+#include <platform/platform.h>
 
 const int32 k_test_value_1 = 42;
 const int32 k_test_value_2 = 100;

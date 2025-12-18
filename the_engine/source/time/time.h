@@ -4,7 +4,7 @@
 
 #include <types/types.h>
 
-const uint64 k_time_nanoseconds_in_millisecond = 1e6;
+const uint64 k_time_nanoseconds_in_millisecond = 1000000ULL;
 
 typedef uint64 t_timestamp;
 

@@ -32,7 +32,7 @@ template<typename t_type> inline bool operator!=(const e_invalid& lhs, const t_t
 
 
 const byte k_byte_max = 0xFF;
-const char k_char_max = 0xFF;
+const char k_char_max = 0xF;
 
 const int8 k_int8_max = 0x7F;
 const int16 k_int16_max = 0x7FFF;
@@ -44,6 +44,13 @@ const uint16 k_uint16_max = 0xFFFF;
 const uint32 k_uint32_max = 0xFFFFFFFF;
 
 // conversions
+inline uint8 int32_to_uint8(int32 in)
+{
+	ASSERT(in >= 0);
+	ASSERT(in <= static_cast<int32>(k_uint8_max));
+	return static_cast<uint8>(in);
+}
+
 inline int32 int64_to_int32(int64 in)
 {
 	ASSERT(in <= static_cast<int64>(k_int32_max));

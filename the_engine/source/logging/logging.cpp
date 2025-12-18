@@ -1,14 +1,17 @@
 #include "logging.h"
 
-#include "windows.h"
-#include <cstdarg>
-#include <iostream>
-#include <debugapi.h>
-
 #include <types/types.h>
 #include <structures/string.h>
 #include "asserts.h"
 #include <time/time.h>
+
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
+#include "windows.h"
+#include <cstdarg>
+#include <debugapi.h>
+IGNORE_WINDOWS_WARNINGS_POP
 
 const int32 k_max_log_length = 256;
 

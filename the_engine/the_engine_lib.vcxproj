@@ -180,6 +180,7 @@
     <ClCompile Include="source\logging\logging.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\memory\memory.cpp" />
+    <ClCompile Include="source\platform\platform_windows.cpp" />
     <ClCompile Include="source\structures\string.cpp" />
     <ClCompile Include="source\threads\threads.cpp" />
     <ClCompile Include="source\time\time.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="source\logging\logging.h" />
     <ClInclude Include="source\mmath.h" />
     <ClInclude Include="source\memory\memory.h" />
+    <ClInclude Include="source\platform\platform.h" />
     <ClInclude Include="source\structures\array.h" />
     <ClInclude Include="source\structures\string.h" />
     <ClInclude Include="source\threads\threads.h" />

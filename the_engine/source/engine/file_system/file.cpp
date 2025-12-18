@@ -1,6 +1,10 @@
 #include "file.h"
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
 #include "windows.h"
 #include <minwinbase.h>
+IGNORE_WINDOWS_WARNINGS_POP
 
 c_file_path::c_file_path(const t_string_256 path)
 {
@@ -38,7 +42,7 @@ void c_file_path::get_file_name(t_string_256& out_file_name) const
 	uint8 ext_index;
 	split_path(directory_name_index, file_name_index, ext_index);
 
-	out_file_name.copy_from(m_data, file_name_index, m_data.used());
+	out_file_name.copy_from_range(m_data, file_name_index, m_data.used());
 }
 
 void c_file_path::get_file_ext(t_string_256& out_file_ext) const
@@ -50,7 +54,7 @@ void c_file_path::get_file_ext(t_string_256& out_file_ext) const
 	uint8 ext_index;
 	split_path(directory_name_index, file_name_index, ext_index);
 	
-	out_file_ext.copy_from(m_data, ext_index, m_data.used());
+	out_file_ext.copy_from_range(m_data, ext_index, m_data.used());
 }
 
 void c_file_path::get_file_name_no_ext(t_string_256& out_file_name) const
@@ -62,7 +66,7 @@ void c_file_path::get_file_name_no_ext(t_string_256& out_file_name) const
 	uint8 ext_index;
 	split_path(directory_name_index, file_name_index, ext_index);
 
-	out_file_name.copy_from(m_data, file_name_index, ext_index - 1);
+	out_file_name.copy_from_range(m_data, file_name_index, ext_index - 1);
 }
 
 void c_file_path::get_directory_path(t_string_256& out_directory_path) const
@@ -74,7 +78,7 @@ void c_file_path::get_directory_path(t_string_256& out_directory_path) const
 	uint8 ext_index;
 	split_path(directory_name_index, file_name_index, ext_index);
 
-	out_directory_path.copy_from(m_data, 0, file_name_index - 1);
+	out_directory_path.copy_from_range(m_data, 0, file_name_index - 1);
 }
 
 void c_file_path::get_directory_name(t_string_256& out_directory_name) const
@@ -86,7 +90,7 @@ void c_file_path::get_directory_name(t_string_256& out_directory_name) const
 	uint8 ext_index;
 	split_path(directory_name_index, file_name_index, ext_index);
 
-	out_directory_name.copy_from(m_data, directory_name_index, file_name_index - 1);
+	out_directory_name.copy_from_range(m_data, directory_name_index, file_name_index - 1);
 }
 
 void c_file_path::split_path(uint8& out_directory_name_index, uint8& out_filename_index, uint8& out_ext_index) const
@@ -95,7 +99,7 @@ void c_file_path::split_path(uint8& out_directory_name_index, uint8& out_filenam
 	out_filename_index = k_invalid;
 	out_ext_index = k_invalid;
 
-	for (int16 i = m_data.used() - 1; i >= 0; i--)
+	for (int8 i = int32_to_uint8(m_data.used()) - 1; i >= 0; i--)
 	{
 		char ch = m_data[i];
 		if (out_ext_index == k_invalid && ch == get_ext_separator())
@@ -179,27 +183,31 @@ bool c_file::close()
 	return result;
 }
 
-bool c_file::read()
+uint32 c_file::read_string(c_array_reference<char>& out_buffer, int32 start, int32 length)
 {
+	if (length == 0)
+	{
+		length = out_buffer.capacity();
+	}
+
+	ASSERT(start + length <= out_buffer.capacity());
 	ASSERT(is_open());
 	ASSERT(m_flags.test(file_open_mode_read));
 
-	bool result = false;
+	uint32 bytes_read = 0;
+	LPOVERLAPPED overlapped_ptr = nullptr;
 
-	byte temp[1024];
-	DWORD        nNumberOfBytesToRead = 1024;
-	LPDWORD      lpNumberOfBytesRead = 0;
-	LPOVERLAPPED lpOverlapped = nullptr;
-
-	result = ReadFile(
+	bool result= ReadFile(
 		m_file_handle,
-		temp,
-		nNumberOfBytesToRead,
-		lpNumberOfBytesRead,
-		lpOverlapped
-	);
+		out_buffer.data(),
+		length,
+		&bytes_read,
+		overlapped_ptr);
 
-	return result;
+	// how could we succeed but read no bytes?
+	ASSERT(!result || bytes_read > 0);
+
+	return bytes_read;
 }
 
 

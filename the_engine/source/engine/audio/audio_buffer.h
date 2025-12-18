@@ -4,8 +4,11 @@
 
 #include <types/types.h>
 #include "structures/array.h"
-#include "memory.h"
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
 #include <atomic>
+IGNORE_WINDOWS_WARNINGS_POP
 
 template<typename t_type>
 class c_audio_buffer

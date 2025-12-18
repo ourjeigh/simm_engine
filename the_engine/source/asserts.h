@@ -1,7 +1,8 @@
 #ifndef __ASSERTS_H__
 #define __ASSERTS_H__
 #pragma once
-#include <intrin.h>
+
+
 
 // TODO: figure out why this doesn't pass the correct string to gtests EXPECT_DEATH
 #define ASSERT(condition) \
@@ -18,7 +19,6 @@
 
 #define STATIC_ASSERT(condition) static_assert(condition)
 
-#define NOP() __nop()
 
 void assert_internal(const char* condition, const char *file, const long line);
 void halt_internal(const char* message, const char* file, const long line);

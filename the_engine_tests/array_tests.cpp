@@ -109,6 +109,102 @@ TEST(C_ARRAY_REF, MAKE_REFERENCE_CONST)
 	}
 }
 
+TEST(I_ARRAY, COPY_FROM_SAME_TYPE)
+{
+	c_array<int32, 10> array1;
+
+	for (int32 i = 0; i < 10; i++)
+	{
+		array1[i] = i + 1;
+	}
+
+	c_array<int32, 10> array2;
+
+	array2.copy_from_range(array1, 0, 10);
+
+	for (int32 i = 0; i < 10; i++)
+	{
+		EXPECT_EQ(array2[i], i + 1);
+	}
+}
+
+TEST(I_ARRAY, COPY_FROM_DIFF_TYPE)
+{
+	c_array<int32, 10> array1;
+
+	for (int32 i = 0; i < 10; i++)
+	{
+		array1[i] = i + 1;
+	}
+
+	c_array<int32, 5> array2;
+
+	array2.copy_from_range(array1, 0, 5);
+
+	for (int32 i = 0; i < 5; i++)
+	{
+		EXPECT_EQ(array2[i], i + 1);
+	}
+}
+
+TEST(I_ARRAY, COPY_FROM_REF)
+{
+	c_array<int32, 10> array1;
+
+	for (int32 i = 0; i < 10; i++)
+	{
+		array1[i] = i + 1;
+	}
+
+	c_array_reference<int32> ref1 = array1.make_reference();
+
+	c_array<int32, 5> array2;
+
+	array2.copy_from_range(ref1, 0, 5);
+
+	for (int32 i = 0; i < 5; i++)
+	{
+		EXPECT_EQ(array2[i], i + 1);
+	}
+}
+
+TEST(I_ARRAY, COPY_FROM_OFFSET)
+{
+	c_array<int32, 10> array1;
+
+	for (int32 i = 0; i < 10; i++)
+	{
+		array1[i] = i + 1;
+	}
+
+	c_array_reference<int32> ref1 = array1.make_reference();
+
+	c_array<int32, 5> array2;
+
+	array2.copy_from_range(ref1, 2, 7);
+
+	for (int32 i = 0; i < 5; i++)
+	{
+		EXPECT_EQ(array2[i], i + 3);
+	}
+}
+
+TEST(I_ARRAY, COPY_FROM_BAD_RANGE)
+{
+	c_array<int32, 10> array1;
+
+	for (int32 i = 0; i < 10; i++)
+	{
+		array1[i] = i + 1;
+	}
+
+	c_array_reference<int32> ref1 = array1.make_reference();
+
+	c_array<int32, 5> array2;
+
+	EXPECT_DEATH(array2.copy_from_range(ref1, 2, 8), ".*");
+}
+
 TEST(C_STACK, C_STACK_PUSH_POP_TOP)
 {
 	const int32 size = 3;

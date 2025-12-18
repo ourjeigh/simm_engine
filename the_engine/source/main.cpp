@@ -1,5 +1,4 @@
 #include <engine/engine.h>
-#include <windows.h>
 #include <asserts.h>
 #include <engine/engine_system.h>
 #include <engine/input/input_system.h>
@@ -7,6 +6,12 @@
 #include "memory/memory.h"
 #include <threads/threads.h>
 #include <logging/logging.h>
+
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
+#include <windows.h>
+IGNORE_WINDOWS_WARNINGS_POP
 
 const char* k_application_name = "SiMM Engine";
 

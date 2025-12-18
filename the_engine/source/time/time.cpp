@@ -1,9 +1,13 @@
 #include "time.h"
+//#include <mmath.h>
+
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
 #include <windows.h>
 #include <timeapi.h>
 #include <profileapi.h>
-#include <mmath.h>
-
+IGNORE_WINDOWS_WARNINGS_PUSH
 
 const real64 k_milliseconds_in_second = 1000.0f;
 const real64 k_microseconds_in_second = 1000000.0f;

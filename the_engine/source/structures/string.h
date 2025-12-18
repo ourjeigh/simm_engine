@@ -3,10 +3,15 @@
 #pragma once
 
 #include "structures/array.h"
-//#include "asserts.h"
 #include <types/types.h>
+
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
+// TODO: remove
 #include <stdio.h>
 #include <cstdarg>
+IGNORE_WINDOWS_WARNINGS_POP
 
 const char k_null_char = '\0';
 

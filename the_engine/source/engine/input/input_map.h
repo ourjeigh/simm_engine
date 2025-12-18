@@ -3,8 +3,12 @@
 #pragma once
 
 #include "types/types.h"
-#include "asserts.h"
-#include <Windows.h>
+//#include "asserts.h"
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
+#include <windows.h>
+IGNORE_WINDOWS_WARNINGS_POP
 
 const uint16 k_input_id_key_down =		WM_KEYDOWN;
 const uint16 k_input_id_key_up =		WM_KEYUP;

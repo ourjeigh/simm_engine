@@ -1,6 +1,10 @@
 #include "asserts.h"
 #include <logging/logging.h>
+#include "platform/platform.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
 #include <windows.h>
+IGNORE_WINDOWS_WARNINGS_POP
 
 void assert_internal(const char* condition, const char* file, const long line)
 {

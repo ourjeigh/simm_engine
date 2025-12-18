@@ -3,13 +3,16 @@
 
 #include "audio_sink.h"
 #include "logging/logging.h"
+#include <asserts.h>
+#include "platform/platform.h"
 
+IGNORE_WINDOWS_WARNINGS_PUSH
 #include <Windows.h>
 #include <comdef.h>
 #include <combaseapi.h>
 #include <mmdeviceapi.h>
 #include <Audioclient.h>
-#include <asserts.h>
+IGNORE_WINDOWS_WARNINGS_POP
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);

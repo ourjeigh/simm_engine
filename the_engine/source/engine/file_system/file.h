@@ -50,7 +50,10 @@ public:
 
 	bool is_open() const { return m_file_handle != nullptr; }
 
-	bool read();
+	//template<class t_type>
+	//bool read(c_array_reference<t_type>& out_buffer);
+	uint32 read_string(c_array_reference<char>& out_buffer, int32 start, int32 length);
+
 protected:
 	c_file_path m_path;
 	t_file_open_mode_flags m_flags;
