@@ -50,9 +50,8 @@ public:
 
 	bool is_open() const { return m_file_handle != nullptr; }
 
-	//template<class t_type>
-	//bool read(c_array_reference<t_type>& out_buffer);
-	uint32 read_string(c_array_reference<char>& out_buffer, int32 start, int32 length);
+	//uint32 read_string(int32 start, int32 length, c_array_reference<char>& out_buffer);
+	uint32 read_bytes(int32 start, int32 length, c_array_reference<byte>& out_buffer);
 
 protected:
 	c_file_path m_path;

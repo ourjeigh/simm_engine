@@ -10,7 +10,7 @@ public:
 	c_audio_sink();
 	~c_audio_sink() {}
 
-	bool register_sink(s_audio_format& inout_audio_format);
+	bool register_sink(s_audio_device_format& inout_audio_format);
 	bool unregister_sink();
 
 	// maybe change this to take an actual c_audio_buffer and just have the sink set the data pointer

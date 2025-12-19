@@ -3,6 +3,8 @@
 #pragma once
 
 #include <types/types.h>
+#include <engine/file_system/file.h>
+#include "audio_types.h"
 
 class c_audio_source
 {
@@ -54,6 +56,21 @@ private:
 	float g_level = 2.0f / 0xffffffff;
 	int g_x1 = 0x67452301;
 	int g_x2 = 0xefcdab89;
+};
+
+class c_audio_source_file : public c_audio_source
+{
+public:
+	c_audio_source_file() : m_position(k_invalid), c_audio_source() {}
+	~c_audio_source_file();
+
+	void set_file(c_file_path file_path);
+	void get_samples(real32* buffer, uint32 num_samples);
+private:
+	c_file m_file;
+	s_audio_file_format m_format;
+	uint32 m_position;
+	bool m_looping = true;
 };
 
 #endif // __AUDIO_SOURCE_H__

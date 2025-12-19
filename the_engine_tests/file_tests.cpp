@@ -87,7 +87,26 @@ TEST(C_FILE, OPEN_SUCESS)
 	EXPECT_FALSE(file.is_open());
 }
 
-TEST(C_FILE, READ)
+//TEST(C_FILE, READ_STRING)
+//{
+//	t_string_256 file_path_string(k_test_file_path_real);
+//	c_file_path file_path(file_path_string);
+//	t_file_open_mode_flags flags;
+//
+//	c_file file;
+//	flags.set(file_open_mode_read, true);
+//	bool result = file.open(file_path, flags);
+//
+//	t_string_1024 string_buffer;
+//
+//	file.read_string(0, 0, string_buffer.make_reference());
+//
+//	file.close();
+//
+//	string_buffer.assert_valid();
+//}
+
+TEST(C_FILE, READ_BYTES)
 {
 	t_string_256 file_path_string(k_test_file_path_real);
 	c_file_path file_path(file_path_string);
@@ -97,9 +116,9 @@ TEST(C_FILE, READ)
 	flags.set(file_open_mode_read, true);
 	bool result = file.open(file_path, flags);
 
-	t_string_1024 string_buffer;
+	c_array<byte, 2048> buffer;
 
-	file.read_string(string_buffer.make_reference(), 0, 0);
+	file.read_bytes(0, 0, buffer.make_reference());
 
 	file.close();
 }

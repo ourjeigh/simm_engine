@@ -6,6 +6,14 @@ IGNORE_WINDOWS_WARNINGS_PUSH
 #include <minwinbase.h>
 IGNORE_WINDOWS_WARNINGS_POP
 
+template<class t_type>
+int32 read_file_internal(
+	void* file_handle,
+	t_file_open_mode_flags flags,
+	int32 start,
+	int32 length,
+	c_array_reference<t_type>& out_buffer);
+
 c_file_path::c_file_path(const t_string_256 path)
 {
 	m_data = path;
@@ -183,33 +191,39 @@ bool c_file::close()
 	return result;
 }
 
-uint32 c_file::read_string(c_array_reference<char>& out_buffer, int32 start, int32 length)
+// this doesn't null terminate the string or set the stack's top
+
+//uint32 c_file::read_string(int32 start, int32 length, c_array_reference<char>& out_buffer)
+//{
+//	ASSERT(is_open());
+//	if (length == out_buffer.capacity())
+//	{
+//		length--;
+//	}
+//
+//
+//	int32 read_count = read_file_internal(
+//		m_file_handle,
+//		m_flags,
+//		start,
+//		length,
+//		out_buffer);
+//
+//
+//
+//	return read_count;
+//}
+
+uint32 c_file::read_bytes(int32 start, int32 length, c_array_reference<byte>& out_buffer)
 {
-	if (length == 0)
-	{
-		length = out_buffer.capacity();
-	}
-
-	ASSERT(start + length <= out_buffer.capacity());
 	ASSERT(is_open());
-	ASSERT(m_flags.test(file_open_mode_read));
-
-	uint32 bytes_read = 0;
-	LPOVERLAPPED overlapped_ptr = nullptr;
-
-	bool result= ReadFile(
+	return read_file_internal(
 		m_file_handle,
-		out_buffer.data(),
+		m_flags,
+		start,
 		length,
-		&bytes_read,
-		overlapped_ptr);
-
-	// how could we succeed but read no bytes?
-	ASSERT(!result || bytes_read > 0);
-
-	return bytes_read;
+		out_buffer);
 }
-
 
 char get_path_separator()
 {
@@ -221,3 +235,43 @@ char get_ext_separator()
 	return '.';
 }
 
+// private
+
+template<class t_type>
+int32 read_file_internal(
+	void* file_handle,
+	t_file_open_mode_flags flags,
+	int32 start,
+	int32 length,
+	c_array_reference<t_type>& out_buffer)
+{
+	if (length == 0)
+	{
+		length = out_buffer.capacity();
+	}
+
+	//ASSERT(start + length <= out_buffer.capacity());
+	//ASSERT(flags.test(file_open_mode_read));
+
+	//SetFilePointer(file_handle, start, nullptr, FILE_BEGIN);
+
+	uint32 bytes_read = 0;
+	OVERLAPPED overlapped;
+	zero_object(overlapped);
+	overlapped.Offset = start;
+
+	//LPOVERLAPPED overlapped_ptr = nullptr;
+	LPOVERLAPPED overlapped_ptr = &overlapped;
+
+	bool result = ReadFile(
+		file_handle,
+		out_buffer.data(),
+		length,
+		&bytes_read,
+		overlapped_ptr);
+
+	// how could we succeed but read no bytes?
+	//ASSERT(!result || bytes_read > 0);
+
+	return bytes_read;
+}

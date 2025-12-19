@@ -49,7 +49,7 @@ c_audio_sink::c_audio_sink()
 	m_render_active = false;
 }
 
-bool c_audio_sink::register_sink(s_audio_format& inout_audio_format)
+bool c_audio_sink::register_sink(s_audio_device_format& inout_audio_format)
 {
 	//https://learn.microsoft.com/en-us/windows/win32/coreaudio/rendering-a-stream?source=recommendations
 
@@ -103,19 +103,19 @@ bool c_audio_sink::register_sink(s_audio_format& inout_audio_format)
 	const real32 reftimes_per_millisecond = 10000.0f;
 	m_device_period_ms = static_cast<uint32>(device_period_min / reftimes_per_millisecond / 2.0f);
 
-	inout_audio_format.num_channels = mix_format->nChannels;
+	inout_audio_format.channel_count = mix_format->nChannels;
 	inout_audio_format.sample_rate = mix_format->nSamplesPerSec;
 
 	switch (mix_format->wBitsPerSample)
 	{
 	case 16:
-		inout_audio_format.sample_type = sample_type_int16;
+		inout_audio_format.sample_type = audio_sample_type_int16;
 		break;
 	case 32:
-		inout_audio_format.sample_type = sample_type_float32;
+		inout_audio_format.sample_type = audio_sample_type_float32;
 		break;
 	default:
-		inout_audio_format.sample_type = sample_type_unknown;
+		inout_audio_format.sample_type = audio_sample_type_unknown;
 		break;
 	}
 

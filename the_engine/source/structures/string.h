@@ -33,7 +33,7 @@ template<int32 k_max_size>
 class c_string : public c_stack<char, k_max_size>
 {
 public:
-	c_string() {}
+	c_string() { this->clear(); }
 
 	constexpr c_string(const char* string)
 	{
@@ -95,7 +95,25 @@ public:
 			return nullptr;
 		}
 
-		return &this->m_data[0];
+		return this->m_data;
+	}
+
+	void HACK_post_copy_fixup(int32 chars_written)
+	{
+		if (chars_written == k_max_size)
+		{
+			chars_written--;
+		}
+
+		this->assert_valid_index(chars_written);
+		this->m_top = chars_written;
+		terminate();
+	}
+
+	void assert_valid()
+	{
+		assert_valid_index(this->m_top);
+		ASSERT(this->top() == k_null_char);
 	}
 
 private:

@@ -75,6 +75,7 @@ private:
 
 	c_audio_source_noise m_HACK_test_noise;
 	c_audio_source_sine m_HACK_test_sine;
+	c_audio_source_file m_HACK_test_file;
 };
 
 class c_audio_render_thread : public c_thread
@@ -108,6 +109,7 @@ private:
 	DEBUG_ONLY_MEMBER(bool d_read_initialized);
 };
 
-
+uint32 audio_get_sample_rate();
+const s_audio_device_format& audio_get_format();
 
 #endif//__AUDIO_SYSTEM_H__

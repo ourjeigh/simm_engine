@@ -17,6 +17,7 @@
 		halt_internal(message,  __FILE__, __LINE__); \
 	} while (0)
 
+#define HALT_UNIMPLEMENTED() HALT("Unimplemented")
 #define STATIC_ASSERT(condition) static_assert(condition)
 
 

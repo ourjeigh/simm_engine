@@ -42,7 +42,7 @@ t_type math_abs(t_type in)
 }
 
 template<typename t_type>
-t_type math_pow(t_type base, int32 exp)
+constexpr t_type math_pow(t_type base, int32 exp)
 {
 	if (exp == 0)
 	{

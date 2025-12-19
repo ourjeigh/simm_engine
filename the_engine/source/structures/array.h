@@ -70,21 +70,27 @@ public:
 	}
 
 protected:
-
-private:
-
 	void assert_valid_index(int32 index) const
 	{
 		ASSERT(index >= 0);
 		ASSERT(index < capacity());
 	}
+
+private:
+
 };
 
 template<class t_type>
 class c_array_reference : public i_array<c_array_reference<t_type>, t_type>
 {
 public:
-	c_array_reference(t_type* data, int32 capacity) : m_data_ref(data), m_capacity(capacity) {}
+	explicit c_array_reference(t_type* data, int32 capacity) : m_data_ref(data), m_capacity(capacity) {}
+	c_array_reference(const c_array_reference& other) : m_data_ref(other.m_data_ref), m_capacity(other.m_capacity) {}
+	c_array_reference& operator=(const c_array_reference& other)
+	{
+		return c_array_reference(other.m_data_ref, other.m_capacity);
+	}
+
 	int32 capacity() const { return m_capacity; }
 	t_type* data() { return m_data_ref; }
 	const t_type* data() const { return m_data_ref; }
@@ -144,19 +150,20 @@ public:
 
 	c_array_reference<const t_type> make_reference() const
 	{
-		return { m_data, k_max_size };
+		//return { m_data, k_max_size };
+		return c_array_reference<const t_type>(m_data, k_max_size);
 	}
 
 	const c_array_reference<const t_type> make_reference_const() const
 	{
-		return { m_data, k_max_size };
+		return c_array_reference<const t_type>( m_data, k_max_size );
 	}
-
-protected:
-	friend class i_array<c_array<t_type, k_max_size>, t_type>;
 
 	t_type* data() { return m_data; }
 	const t_type* data() const { return m_data; }
+
+protected:
+	friend class i_array<c_array<t_type, k_max_size>, t_type>;
 
 	t_type m_data[k_max_size];
 };

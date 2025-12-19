@@ -31,8 +31,8 @@ template<typename t_type> inline bool operator!=(const t_type& lhs, const e_inva
 template<typename t_type> inline bool operator!=(const e_invalid& lhs, const t_type& rhs) { return !(lhs == rhs); }
 
 
-const byte k_byte_max = 0xFF;
 const char k_char_max = 0xF;
+const byte k_byte_max = 0xFF;
 
 const int8 k_int8_max = 0x7F;
 const int16 k_int16_max = 0x7FFF;

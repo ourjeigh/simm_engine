@@ -10,7 +10,7 @@ const int32 k_audio_output_buffer_size = k_audio_engine_buffer_size * 16;
 
 c_audio_engine_thread g_audio_engine_thread;
 c_audio_render_thread g_audio_render_thread;
-s_audio_format g_audio_format;
+s_audio_device_format g_audio_format;
 
 c_audio_threadsafe_ring_buffer<real32, 2, k_audio_output_buffer_size> g_audio_output_ring_buffer;
 
@@ -77,6 +77,7 @@ void c_audio_engine_thread::audio_engine_thread_entry_point(c_audio_engine_threa
 	{
 		thread->m_HACK_test_noise = c_audio_source_noise(g_audio_format.sample_rate);
 		thread->m_HACK_test_sine = c_audio_source_sine(g_audio_format.sample_rate, 440.0f);
+		thread->m_HACK_test_file.set_file(c_file_path("C:\\Users\\RJ\\Desktop\\pelican_mono.wav"));
 	}
 
 	const real64 update_period_ms = static_cast<real32>(g_audio_format.buffer_size) / g_audio_format.sample_rate * 1000.0f;
@@ -114,7 +115,8 @@ void c_audio_engine_thread::process_audio()
 		NOP();
 	}
 
-	m_HACK_test_sine.get_samples(mix_buffer.get_channel(0), mix_buffer.size());
+	//m_HACK_test_sine.get_samples(mix_buffer.get_channel(0), mix_buffer.size());
+	m_HACK_test_file.get_samples(mix_buffer.get_channel(0), mix_buffer.size());
 	memory_copy(mix_buffer.get_channel(1), mix_buffer.get_channel(0), sizeof(real32) * mix_buffer.size());
 
 	int32 samples_written = g_audio_output_ring_buffer.write(&mix_buffer, mix_buffer.size());
@@ -186,7 +188,7 @@ void c_audio_render_thread::render_audio()
 	if (m_sink.begin_render(buffer, buffer_size))
 	{
 		ASSERT(buffer != nullptr);
-		ASSERT(g_audio_output_ring_buffer.channel_count() == g_audio_format.num_channels);
+		ASSERT(g_audio_output_ring_buffer.channel_count() == g_audio_format.channel_count);
 		IF_DEBUG(int32 read_samples = ) g_audio_output_ring_buffer.read_interleaved(buffer, buffer_size);
 
 #ifdef DEBUG
@@ -206,4 +208,14 @@ void c_audio_render_thread::render_audio()
 
 		m_sink.render_complete(buffer_size);
 	}
+}
+
+uint32 audio_get_sample_rate()
+{
+	return g_audio_format.sample_rate;
+}
+
+const s_audio_device_format& audio_get_format()
+{
+	return g_audio_format;
 }
