@@ -75,7 +75,7 @@ private:
 
 	c_audio_source_noise m_HACK_test_noise;
 	c_audio_source_sine m_HACK_test_sine;
-	c_audio_source_file m_HACK_test_file;
+	c_audio_source_file_streamed m_HACK_test_file;
 };
 
 class c_audio_render_thread : public c_thread

@@ -134,15 +134,6 @@ public:
 
 	int32 capacity() const { return k_max_size; }
 
-	// can this move to the interface?
-	/*void copy_from(const c_array<t_type, k_max_size>& other, int32 start, int32 end)
-	{
-		ASSERT(start < end);
-		int32 count = (end - start);
-
-		memory_copy(m_data, &other.m_data[start], sizeof(t_type) * count);
-	}*/
-
 	c_array_reference<t_type> make_reference()
 	{
 		return c_array_reference<t_type>(m_data, k_max_size);
@@ -150,7 +141,6 @@ public:
 
 	c_array_reference<const t_type> make_reference() const
 	{
-		//return { m_data, k_max_size };
 		return c_array_reference<const t_type>(m_data, k_max_size);
 	}
 

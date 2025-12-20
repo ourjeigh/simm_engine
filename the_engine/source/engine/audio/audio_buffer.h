@@ -53,6 +53,13 @@ public:
 		return &m_data[channel_index * m_size];
 	}
 
+	void zero();
+
+	// end exclusive
+	void zero(int32 begin, int32 end);
+	void copy_from(const c_audio_buffer<t_type>& other);
+	void copy_from(const c_audio_buffer<t_type>& other, int32 sample_count);
+
 protected:
 	int32 m_channel_count;
 	int32 m_size;
@@ -62,6 +69,8 @@ private:
 	c_audio_buffer(const c_audio_buffer& other) = delete;
 	c_audio_buffer& operator=(const c_audio_buffer& other) = delete;
 };
+
+typedef c_audio_buffer<real32> t_audio_buffer_real32;
 
 template<typename t_type, int32 k_channel_count, int32 k_size>
 class c_static_audio_buffer : public c_audio_buffer<t_type>

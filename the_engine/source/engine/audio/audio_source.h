@@ -5,6 +5,7 @@
 #include <types/types.h>
 #include <engine/file_system/file.h>
 #include "audio_types.h"
+#include "audio_buffer.h"
 
 class c_audio_source
 {
@@ -13,7 +14,7 @@ public:
 	c_audio_source(int32 sample_rate) : m_sample_rate(static_cast<real32>(sample_rate)) {}
 	~c_audio_source() {}
 
-	virtual void get_samples(real32* buffer, uint32 num_samples) = 0;
+	virtual void get_samples(t_audio_buffer_real32& out_buffer) = 0;
 protected:
 	real32 m_sample_rate;
 };
@@ -36,7 +37,7 @@ public:
 	}
 	~c_audio_source_sine() {}
 
-	void get_samples(real32* buffer, uint32 num_samples);
+	void get_samples(t_audio_buffer_real32& out_buffer);
 
 private:
 	uint32 m_sample_position;
@@ -49,7 +50,7 @@ public:
 	c_audio_source_noise() : c_audio_source() {}
 	c_audio_source_noise(int32 sample_rate) : c_audio_source(sample_rate) {}
 
-	void get_samples(real32* buffer, uint32 num_samples);
+	void get_samples(t_audio_buffer_real32& out_buffer);
 
 private:
 
@@ -58,19 +59,20 @@ private:
 	int g_x2 = 0xefcdab89;
 };
 
-class c_audio_source_file : public c_audio_source
+class c_audio_source_file_streamed : public c_audio_source
 {
 public:
-	c_audio_source_file() : m_position(k_invalid), c_audio_source() {}
-	~c_audio_source_file();
+	c_audio_source_file_streamed();
+	~c_audio_source_file_streamed();
 
 	void set_file(c_file_path file_path);
-	void get_samples(real32* buffer, uint32 num_samples);
+
+	void get_samples(t_audio_buffer_real32& out_buffer);
 private:
 	c_file m_file;
 	s_audio_file_format m_format;
 	uint32 m_position;
-	bool m_looping = true;
+	bool m_looping;
 };
 
 #endif // __AUDIO_SOURCE_H__

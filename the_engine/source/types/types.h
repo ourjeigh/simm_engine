@@ -43,18 +43,34 @@ const uint8 k_uint8_max = 0xFF;
 const uint16 k_uint16_max = 0xFFFF;
 const uint32 k_uint32_max = 0xFFFFFFFF;
 
+const real32 k_real32_min = 1.175494351e-38F;
+const real32 k_real32_max = 3.402823466e+38f;
+const real64 k_real64_min = 2.2250738585072014e-308;
+const real64 k_real64_max = 1.7976931348623158e+308;
+
+
 // conversions
-inline uint8 int32_to_uint8(int32 in)
+inline constexpr uint8 int32_to_uint8(int32 in)
 {
 	ASSERT(in >= 0);
 	ASSERT(in <= static_cast<int32>(k_uint8_max));
 	return static_cast<uint8>(in);
 }
 
-inline int32 int64_to_int32(int64 in)
+inline constexpr int64 int32_to_int64(int32 in)
+{
+	return in;
+}
+
+inline constexpr int32 int64_to_int32(int64 in)
 {
 	ASSERT(in <= static_cast<int64>(k_int32_max));
 	return static_cast<int32>(in);
+}
+
+inline constexpr real32 int64_to_real32(int64 in)
+{
+	return static_cast<real32>(in);
 }
 
 inline uint32 uint64_to_uint32(uint64 in)

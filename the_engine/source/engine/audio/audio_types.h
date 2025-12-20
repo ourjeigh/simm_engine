@@ -40,33 +40,40 @@ struct s_audio_file_format
 	uint16 bits_per_sample;
 	uint16 block_align;
 	uint32 sample_rate;
+	uint32 data_position;
 	uint64 sample_count;
-	uint64 data_position;
 };
 
-//http://soundfile.sapp.org/doc/WaveFormat/
+// these types correspond to the predefined wave file chunks.
+// they must be sized (and ordered) to spec so we can read them 
+// directly from files.
+// see: http://soundfile.sapp.org/doc/WaveFormat/
 struct s_audio_wav_header_riff
 {
 	char riff[4];
 	uint32 chunk_size;
 	char wave[4];
 };
+COMPILE_ASSERT(sizeof(s_audio_wav_header_riff) == 12);
 
 struct s_audio_wav_header_format
 {
 	char format[4];
 	uint32 chunk_size;
-	uint16 audio_format; // 1=PCM,6=mulaw,7=alaw, 257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM 
+	uint16 audio_format;
 	uint16 channel_count;
 	uint32 sample_rate;
 	uint32 bytes_per_second;
 	uint16 block_align;
 	uint16 bits_per_sample;
 };
+COMPILE_ASSERT(sizeof(s_audio_wav_header_format) == 24);
 
 struct s_audio_wav_header_chunk
 {
 	char name[4];
 	uint32 chunk_size;
 };
+COMPILE_ASSERT(sizeof(s_audio_wav_header_chunk) == 8);
+
 #endif // __AUDIO_TYPES_H__

@@ -1,5 +1,45 @@
 #include "mmath.h"
 
+template<typename t_type>
+void c_audio_buffer<t_type>::zero()
+{
+	zero(0, size());
+}
+
+template<typename t_type>
+void c_audio_buffer<t_type>::zero(int32 begin, int32 end)
+{
+	ASSERT(0 <= begin && begin < size());
+	ASSERT(0 <= end && end <= size());
+	ASSERT(begin < end);
+
+	int32 sample_count = end - begin;
+	for (int32 channel_index = 0; channel_index < channel_count(); channel_index++)
+	{
+		memory_zero(&get_channel(channel_index)[begin], sample_count * sizeof(t_type));
+	}
+}
+
+template<typename t_type>
+void c_audio_buffer<t_type>::copy_from(const c_audio_buffer<t_type>& other)
+{
+	ASSERT(other.channel_count() <= channel_count());
+
+	copy_from(other, size());
+}
+
+template<typename t_type>
+void c_audio_buffer<t_type>::copy_from(const c_audio_buffer<t_type>& other, int32 sample_count)
+{
+	ASSERT(other.channel_count() <= channel_count());
+	ASSERT(other.size() >= sample_count);
+
+	for (int32 channel_index = 0; channel_index < channel_count(); channel_index++)
+	{
+		memory_copy(get_channel(channel_index), other.get_channel_const(channel_index), sample_count * sizeof(t_type));
+	}
+}
+
 // returns actual samples written
 template<typename t_type, int32 k_channel_count, int32 k_size>
 int32 c_audio_ring_buffer<t_type, k_channel_count, k_size>::write(const c_audio_buffer<t_type>* in_buffer, int32 sample_count)

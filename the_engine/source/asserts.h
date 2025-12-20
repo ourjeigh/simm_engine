@@ -12,6 +12,8 @@
 		} \
 	} while (0)
 
+#define COMPILE_ASSERT(condition) static_assert(condition)
+
 #define HALT(message) \
 	do { \
 		halt_internal(message,  __FILE__, __LINE__); \

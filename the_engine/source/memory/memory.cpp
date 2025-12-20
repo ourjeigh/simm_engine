@@ -118,3 +118,23 @@ void memory_move(void* dest, void const* src, size_t size)
 		}
 	}
 }
+
+int32 memory_compare(const void* left, const void* right, size_t size)
+{
+	while (size > 0)
+	{
+		byte left_byte = *reinterpret_cast<const byte*>(left);
+		byte right_byte = *reinterpret_cast<const byte*>(right);
+		if (left_byte < right_byte)
+		{
+			return -1;
+		}
+		else if (left_byte > right_byte)
+		{
+			return 1;
+		}
+		size--;
+	}
+
+	return 0;
+}

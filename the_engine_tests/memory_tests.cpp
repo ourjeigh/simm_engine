@@ -93,3 +93,11 @@ TEST(MEMORY, MEMMOVE)
 		EXPECT_EQ(data[i], expected[i]);
 	}
 }
+
+TEST(MEMORY, MEMORY_COMPARE)
+{
+	byte data_array[4] = { 'd', 'a', 't', 'a' };
+	const char* data_string = "data";
+
+	EXPECT_EQ(memory_compare(data_array, data_string, sizeof(data_array)), 0);
+}
