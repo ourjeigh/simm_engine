@@ -4,6 +4,7 @@
 
 #include "structures/string.h"
 #include "structures/array.h"
+#include <platform/platform_handle.h>
 
 const uint32 k_file_path_max = 256;
 
@@ -43,19 +44,29 @@ typedef c_flags<k_file_open_mode_count> t_file_open_mode_flags;
 class c_file
 {
 public:
-	c_file() : m_file_handle(nullptr) { }
+	c_file() : m_file_handle() { }
 
 	bool open(const c_file_path& file_path, t_file_open_mode_flags flags);
 	bool close();
 
-	bool is_open() const { return m_file_handle != nullptr; }
+	bool is_open() const { return m_file_handle.is_valid(); }
 
 	uint32 read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer);
 
 protected:
 	c_file_path m_path;
 	t_file_open_mode_flags m_flags;
-	void* m_file_handle;
+	c_platform_handle m_file_handle;
+};
+
+class c_file_buffered : public c_file
+{
+public:
+	void set_buffer(c_array_reference<byte> buffer) { m_buffer = buffer; }
+
+protected:
+	c_array_reference<byte> m_buffer;
+	int32 m_current_read_position;
 };
 
 char get_path_separator();

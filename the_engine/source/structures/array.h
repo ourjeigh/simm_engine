@@ -88,7 +88,9 @@ public:
 	c_array_reference(const c_array_reference& other) : m_data_ref(other.m_data_ref), m_capacity(other.m_capacity) {}
 	c_array_reference& operator=(const c_array_reference& other)
 	{
-		return c_array_reference(other.m_data_ref, other.m_capacity);
+		m_data_ref = other.m_data_ref;
+		m_capacity = other.m_capacity;
+		return *this;
 	}
 
 	int32 capacity() const { return m_capacity; }

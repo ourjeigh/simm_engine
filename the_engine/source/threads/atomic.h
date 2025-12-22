@@ -2,7 +2,7 @@
 #define __ATOMIC_H__
 #pragma once
 
-#include "types.h"
+#include "types/types.h"
 
 #ifdef USING_STD_ATOMIC
 #include <atomic>

@@ -5,7 +5,7 @@
 #include <types/types.h>
 #include "structures/array.h"
 #include "platform/platform.h"
-#include "types/atomic.h"
+#include "threads/atomic.h"
 
 IGNORE_WINDOWS_WARNINGS_PUSH
 //#include <atomic>

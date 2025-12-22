@@ -13,10 +13,16 @@
 #define IGNORE_WINDOWS_WARNINGS_POP		\
 	_Pragma("warning(pop)")
 
+
+
+
+#else
+
 #endif //PLATFORM_WINDOWS
 
 #define NOP() platform_nop()
 
 void platform_nop();
+
 
 #endif //__PLATFORM_H__

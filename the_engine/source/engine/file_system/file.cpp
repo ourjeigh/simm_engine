@@ -4,11 +4,12 @@
 IGNORE_WINDOWS_WARNINGS_PUSH
 #include "windows.h"
 #include <minwinbase.h>
+#include <platform/platform_handle_windows.h>
 IGNORE_WINDOWS_WARNINGS_POP
 
 template<class t_type>
 int32 read_file_internal(
-	void* file_handle,
+	c_platform_handle& file_handle,
 	t_file_open_mode_flags flags,
 	int32 start,
 	int32 length,
@@ -171,7 +172,7 @@ bool c_file::open(const c_file_path& file_path, t_file_open_mode_flags flags)
 	if (file_handle != INVALID_HANDLE_VALUE)
 	{
 		result = true;
-		m_file_handle = file_handle;
+		m_file_handle = c_platform_handle_factory::get_platform_handle_from_native_handle(file_handle);
 		m_flags = flags;
 	}
 
@@ -181,10 +182,10 @@ bool c_file::open(const c_file_path& file_path, t_file_open_mode_flags flags)
 bool c_file::close()
 {
 	bool result = false;
-	if (m_file_handle != nullptr)
+	if (m_file_handle.is_valid())
 	{
-		CloseHandle(m_file_handle);
-		m_file_handle = nullptr;
+		CloseHandle(c_platform_handle_factory::get_native_handle_from_platform_handle(m_file_handle));
+		m_file_handle.invalidate();
 		result = true;
 	}
 
@@ -239,7 +240,7 @@ char get_ext_separator()
 
 template<class t_type>
 int32 read_file_internal(
-	void* file_handle,
+	c_platform_handle& file_handle,
 	t_file_open_mode_flags flags,
 	int32 start,
 	int32 length,
@@ -264,7 +265,7 @@ int32 read_file_internal(
 	LPOVERLAPPED overlapped_ptr = &overlapped;
 
 	bool result = ReadFile(
-		file_handle,
+		c_platform_handle_factory::get_native_handle_from_platform_handle(file_handle),
 		out_buffer.data(),
 		length,
 		&bytes_read,
