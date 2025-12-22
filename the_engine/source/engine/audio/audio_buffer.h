@@ -5,9 +5,10 @@
 #include <types/types.h>
 #include "structures/array.h"
 #include "platform/platform.h"
+#include "types/atomic.h"
 
 IGNORE_WINDOWS_WARNINGS_PUSH
-#include <atomic>
+//#include <atomic>
 IGNORE_WINDOWS_WARNINGS_POP
 
 template<typename t_type>
@@ -170,8 +171,8 @@ public:
 	int32 channel_count() const { return k_channel_count; }
 
 private:
-	std::atomic<int32> m_write_position;
-	std::atomic<int32> m_read_position;
+	c_atomic<int32> m_write_position;
+	c_atomic<int32> m_read_position;
 	c_static_audio_buffer<t_type, k_channel_count, k_size> m_buffer;
 };
 

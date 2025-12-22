@@ -164,12 +164,18 @@ class c_stack : public c_array<t_type, k_max_size>
 public:
 	using typename c_array<t_type, k_max_size>::iterator;
 
-	c_stack<t_type, k_max_size>() : m_top(-1) {}
+	c_stack<t_type, k_max_size>() : m_top(k_invalid) {}
 
 	void push(t_type item)
 	{
 		ASSERT(!full());
 		this->m_data[++m_top] = item;
+	}
+
+	t_type& push()
+	{
+		ASSERT(!full);
+		return this->m_data[++m_top];
 	}
 
 	void pop()

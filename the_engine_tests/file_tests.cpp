@@ -117,7 +117,8 @@ TEST(C_FILE, READ_BYTES)
 	bool result = file.open(file_path, flags);
 
 	c_array<byte, 2048> buffer;
-
+	auto ref = buffer.make_reference();
+	file.read_bytes(0, 0, ref);
 	file.read_bytes(0, 0, buffer.make_reference());
 
 	file.close();

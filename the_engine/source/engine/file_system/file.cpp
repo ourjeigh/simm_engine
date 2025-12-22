@@ -12,7 +12,7 @@ int32 read_file_internal(
 	t_file_open_mode_flags flags,
 	int32 start,
 	int32 length,
-	c_array_reference<t_type>& out_buffer);
+	c_array_reference<t_type> out_buffer);
 
 c_file_path::c_file_path(const t_string_256 path)
 {
@@ -214,7 +214,7 @@ bool c_file::close()
 //	return read_count;
 //}
 
-uint32 c_file::read_bytes(int32 start, int32 length, c_array_reference<byte>& out_buffer)
+uint32 c_file::read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer)
 {
 	ASSERT(is_open());
 	return read_file_internal(
@@ -243,7 +243,7 @@ int32 read_file_internal(
 	t_file_open_mode_flags flags,
 	int32 start,
 	int32 length,
-	c_array_reference<t_type>& out_buffer)
+	c_array_reference<t_type> out_buffer)
 {
 	if (length == 0)
 	{

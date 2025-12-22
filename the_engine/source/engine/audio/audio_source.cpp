@@ -89,17 +89,16 @@ void c_audio_source_file_streamed::set_file(c_file_path file_path)
 	m_file.open(file_path, flags);
 
 	c_array<byte, 2048> header_buffer;
-	auto ref = header_buffer.make_reference();
-	m_file.read_bytes(0, header_buffer.capacity(), ref);
+	m_file.read_bytes(0, header_buffer.capacity(), header_buffer.make_reference());
 
 	uint32 index = 0;
 	s_audio_wav_header_riff riff_chunk;
-	memory_copy(&riff_chunk, &ref.data()[index], sizeof(s_audio_wav_header_riff));
+	memory_copy(&riff_chunk, &header_buffer.data()[index], sizeof(s_audio_wav_header_riff));
 
 	index += sizeof(s_audio_wav_header_riff);
 
 	s_audio_wav_header_format format_chunk;
-	memory_copy(&format_chunk, &ref.data()[index], sizeof(s_audio_wav_header_format));
+	memory_copy(&format_chunk, &header_buffer.data()[index], sizeof(s_audio_wav_header_format));
 
 	m_format.sample_type = get_sample_type_from_bits_per_sample(format_chunk.bits_per_sample);
 	m_format.channel_count = format_chunk.channel_count;
@@ -121,12 +120,12 @@ void c_audio_source_file_streamed::set_file(c_file_path file_path)
 	
 	while (!data_chunk_found)
 	{
-		if (index + sizeof(s_audio_wav_header_chunk) >= ref.capacity())
+		if (index + sizeof(s_audio_wav_header_chunk) >= header_buffer.capacity())
 		{
 			HALT_UNIMPLEMENTED();
 		}
 
-		memory_copy(&chunk, &ref.data()[index], sizeof(s_audio_wav_header_chunk));
+		memory_copy(&chunk, &header_buffer.data()[index], sizeof(s_audio_wav_header_chunk));
 
 		data_chunk_found = memory_compare(chunk.name, "data", sizeof(chunk.name)) == 0;
 
@@ -144,8 +143,6 @@ void c_audio_source_file_streamed::set_file(c_file_path file_path)
 	ASSERT(m_format.data_position > (sizeof(s_audio_wav_header_riff) + sizeof(s_audio_wav_header_format) + sizeof(s_audio_wav_header_chunk)));
 
 	m_position = 0;
-
-	NOP();
 }
 
 inline real32 convert_sample_to_real32(byte* in, e_audio_sample_type sample_type)
@@ -206,8 +203,7 @@ void c_audio_source_file_streamed::get_samples(c_audio_buffer<real32>& out_buffe
 	int32 bytes_to_read = sample_count * m_format.block_align;
 	ASSERT(bytes_to_read < temp_buffer.capacity());
 
-	auto ref = temp_buffer.make_reference();
-	int32 bytes_read = m_file.read_bytes(start_position, bytes_to_read, ref);
+	int32 bytes_read = m_file.read_bytes(start_position, bytes_to_read, temp_buffer.make_reference());
 
 	c_static_audio_buffer<real32, 2, 1024> audio_buffer;
 
@@ -236,7 +232,7 @@ void c_audio_source_file_streamed::get_samples(c_audio_buffer<real32>& out_buffe
 		{
 			m_position = 0;
 			int32 second_pass_bytes_to_read = bytes_to_read - bytes_read;
-			int32 second_pass = m_file.read_bytes(m_format.data_position, second_pass_bytes_to_read, ref);
+			int32 second_pass = m_file.read_bytes(m_format.data_position, second_pass_bytes_to_read, temp_buffer.make_reference());
 			ASSERT(second_pass == bytes_to_read - bytes_read);
 
 			sample_index = 0;

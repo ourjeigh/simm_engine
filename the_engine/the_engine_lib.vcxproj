@@ -184,6 +184,7 @@
     <ClCompile Include="source\structures\string.cpp" />
     <ClCompile Include="source\threads\threads.cpp" />
     <ClCompile Include="source\time\time.cpp" />
+    <ClCompile Include="source\types\atomic.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\config.h" />
@@ -205,10 +206,12 @@
     <ClInclude Include="source\structures\string.h" />
     <ClInclude Include="source\threads\threads.h" />
     <ClInclude Include="source\time\time.h" />
+    <ClInclude Include="source\types\atomic.h" />
     <ClInclude Include="source\types\types.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\engine\audio\audio_buffer.inl" />
+    <None Include="source\types\atomic.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

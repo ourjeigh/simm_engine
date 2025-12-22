@@ -50,7 +50,7 @@ public:
 
 	bool is_open() const { return m_file_handle != nullptr; }
 
-	uint32 read_bytes(int32 start, int32 length, c_array_reference<byte>& out_buffer);
+	uint32 read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer);
 
 protected:
 	c_file_path m_path;

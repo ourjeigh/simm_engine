@@ -18,6 +18,9 @@
 #define DEBUG_ONLY_PARAM_RIGHT_COMMA(x)  x ,
 #else
 #define IF_DEBUG(x)
+#define DEBUG_ONLY_MEMBER(x)
+#define DEBUG_ONLY_PARAM_LEFT_COMMA(x)
+#define DEBUG_ONLY_PARAM_RIGHT_COMMA(x)
 #endif
 
 

@@ -25,7 +25,7 @@ void test_function_loop()
 TEST(THREADS, CREATE_AND_START_THREAD)
 {
 	c_thread test_thread;
-	bool created = test_thread.create(test_function_loop, WIDE("TEST THREAD"));
+	bool created = test_thread.create(test_function_loop, nullptr, WIDE("TEST THREAD"));
 	EXPECT_TRUE(created);
 
 	bool started = test_thread.start();
