@@ -16,8 +16,11 @@ static void main_loop_entry_point();
 const real32 k_max_fps = 30.0f;
 const real32 k_max_frame_interval_seconds = 1 / k_max_fps;
 
+const uint32 k_global_memory_bytes = k_byte_mb;
+
 bool g_interrupt_signalled = false;
 c_engine g_engine;
+c_static_stack_allocator<k_global_memory_bytes> g_global_stack_allocator;
 
 void engine_init()
 {
@@ -27,6 +30,11 @@ void engine_init()
 void engine_term()
 {
 	g_interrupt_signalled = true;
+}
+
+c_stack_allocator* get_global_allocator()
+{
+	return &g_global_stack_allocator;
 }
 
 void c_engine::init()

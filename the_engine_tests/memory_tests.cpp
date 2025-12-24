@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "memory/memory.h"
 #include <types/types.h>
+#include <memory/allocator.h>
+#include <structures/array.h>
+#include <platform/platform.h>
 
 TEST(MEMORY, MEM_SET)
 {
@@ -101,3 +104,61 @@ TEST(MEMORY, MEMORY_COMPARE)
 
 	EXPECT_EQ(memory_compare(data_array, data_string, sizeof(data_array)), 0);
 }
+
+TEST(ALLOCATOR, STACK_ALLOCATOR_ALLOC)
+{
+	byte test_memory[k_byte_kb];
+	c_stack_allocator allocator(test_memory, sizeof(test_memory));
+
+	void* int32_ptr = allocator.allocate(sizeof(int32), alignof(int32));
+	EXPECT_FALSE(int32_ptr == nullptr);
+}
+
+TEST(ALLOCATOR, STACK_ALLOCATOR_MARKERS)
+{
+	byte test_memory[k_byte_kb];
+	c_stack_allocator allocator(test_memory, sizeof(test_memory));
+
+	uint64 first_marker;
+	void* int32_ptr = allocator.allocate(sizeof(int32), alignof(int32), first_marker);
+	EXPECT_TRUE(allocator.is_marker_valid(first_marker));
+
+	uint64 second_marker;
+	void* int64_ptr = allocator.allocate(sizeof(int64), alignof(int64), second_marker);
+	EXPECT_TRUE(allocator.is_marker_valid(second_marker));
+
+	allocator.free_to_marker(second_marker);
+	EXPECT_FALSE(allocator.is_marker_valid(second_marker));
+	EXPECT_TRUE(allocator.is_marker_valid(first_marker));
+}
+
+TEST(ALLOCATOR, STACK_ALLOCATOR_TOO_BIG)
+{
+	byte test_memory[k_byte_kb];
+	c_stack_allocator allocator(test_memory, sizeof(test_memory));
+
+	EXPECT_DEATH(allocator.allocate(sizeof(c_array<int32,1000>), alignof(c_array<int32, 1000>)), ".*");
+}
+
+TEST(ALLOCATOR, STACK_ALLOCATOR_JUST_RIGHT)
+{
+	byte test_memory[k_byte_kb];
+	c_stack_allocator allocator(test_memory, sizeof(test_memory));
+	
+	void* ptr = nullptr;
+
+	EXPECT_NO_FATAL_FAILURE(ptr = allocator.allocate(sizeof(c_array<byte, 1000>), alignof(c_array<byte, 1000>)));
+
+	EXPECT_FALSE(ptr == nullptr);
+}
+
+TEST(ALLOCATOR, STATIC_STACK_ALLOCATOR)
+{
+	c_static_stack_allocator<k_byte_kb> allocator;
+
+	void* int32_ptr = allocator.allocate(sizeof(int32), alignof(int32));
+	EXPECT_FALSE(int32_ptr == nullptr);
+}
+
+
+

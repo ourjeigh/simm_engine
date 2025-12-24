@@ -2,11 +2,26 @@
 #include "memory/memory.h"
 #include <types/types.h>
 
+c_handle::c_handle(c_handle&& other)
+{
+}
+
+c_handle& c_handle::operator=(c_handle&& other)
+{
+}
+
+void* c_handle::get_pointer()
+{
+}
+
+const void* c_handle::get_pointer_const()
+{
+}
+
 void memory_zero(void* obj, size_t size)
 {
 	memory_set(obj, 0, size);
 }
-
 
 void memory_set(void* dest, int value, size_t size)
 {
