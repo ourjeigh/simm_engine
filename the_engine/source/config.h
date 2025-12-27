@@ -4,24 +4,35 @@
 
 // internal defines for common ones
 #ifdef _DEBUG
-#define DEBUG
+#define CONFIG_DEBUG
 #endif 
 
 #ifdef _WIN64
 #define PLATFORM_WINDOWS
 #endif // _WIN64
 
-#ifdef DEBUG
+#if defined(CONFIG_DEBUG)
+
+// Debug specific features
+#define MEMORY_TRACKING_ENABLED
+
 #define IF_DEBUG(x) x
 #define DEBUG_ONLY_MEMBER(x) x
 #define DEBUG_ONLY_PARAM_LEFT_COMMA(x) , x
 #define DEBUG_ONLY_PARAM_RIGHT_COMMA(x)  x ,
-#else
+
+#else 
+#message no config detected, RELEASE assumed
+#define CONFIG_RELEASE
+
 #define IF_DEBUG(x)
 #define DEBUG_ONLY_MEMBER(x)
 #define DEBUG_ONLY_PARAM_LEFT_COMMA(x)
 #define DEBUG_ONLY_PARAM_RIGHT_COMMA(x)
+
 #endif
+
+
 
 
 #endif //__CONFIG_H__

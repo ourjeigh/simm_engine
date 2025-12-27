@@ -167,6 +167,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\algorithms\algorithms_hashing.inl" />
     <ClCompile Include="source\asserts.cpp" />
     <ClCompile Include="source\engine\audio\audio_buffer.cpp" />
     <ClCompile Include="source\engine\audio\audio_sink_windows.cpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="source\threads\atomic.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\algorithms\algorithms.h" />
     <ClInclude Include="source\config.h" />
     <ClInclude Include="source\asserts.h" />
     <ClInclude Include="source\engine\audio\audio_buffer.h" />
@@ -209,6 +211,7 @@
     <ClInclude Include="source\platform\platform_handle_windows.h" />
     <ClInclude Include="source\structures\array.h" />
     <ClInclude Include="source\structures\string.h" />
+    <ClInclude Include="source\structures\string_id.h" />
     <ClInclude Include="source\threads\threads.h" />
     <ClInclude Include="source\time\time.h" />
     <ClInclude Include="source\threads\atomic.h" />

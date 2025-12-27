@@ -11,8 +11,6 @@ class c_engine
 public:
 	void init();
 	void term();
-	// hack, remove
-	//void update();
 };
 
 void engine_init();

@@ -13,43 +13,41 @@ const uint32 k_byte_kib = 1024;
 const uint32 k_byte_mib = math_pow(k_byte_kib, 2);
 const uint32 k_byte_gib = math_pow(k_byte_kib, 3);
 const uint32 k_byte_tib = math_pow(k_byte_kib, 4);
+
 // move
-class c_handle
-{
-public:
-	c_handle() { invalidate(); }
-	~c_handle() { invalidate(); }
+//class c_handle
+//{
+//public:
+//	c_handle() { invalidate(); }
+//	~c_handle() { invalidate(); }
+//
+//	c_handle(c_handle&& other);
+//	c_handle& operator=(c_handle&& other);
+//
+//	bool operator==(const c_handle& other) { return m_pointer == other.m_pointer; }
+//	bool operator!=(const c_handle& other) { return !(*this == other); }
+//
+//	bool is_valid() { return  m_pointer != k_invalid; }
+//	void invalidate() { m_pointer = k_invalid; };
+//
+//	void* get_pointer();
+//	const void* get_pointer_const();
+//
+//private:
+//	// no copying
+//	c_handle(const c_handle& other) = delete;
+//	c_handle& operator=(const c_handle& other) = delete;
+//
+//	uint64 m_pointer;
+//};
 
-	c_handle(c_handle&& other);
-	c_handle& operator=(c_handle&& other);
-
-	bool operator==(const c_handle& other) { return m_pointer == other.m_pointer; }
-	bool operator!=(const c_handle& other) { return !(*this == other); }
-
-	bool is_valid() { return  m_pointer != k_invalid; }
-	void invalidate() { m_pointer = k_invalid; };
-
-	void* get_pointer();
-	const void* get_pointer_const();
-
-private:
-	// may not need this
-	friend class i_memory_allocator;
-
-	// no copying
-	c_handle(const c_handle& other) = delete;
-	c_handle& operator=(const c_handle& other) = delete;
-
-	uint64 m_pointer;
-};
-
-template<typename t_type>
-class c_typed_handle : public c_handle
-{
-public:
-	t_type* get_pointer();
-	const t_type* get_pointer_const();
-};
+//template<typename t_type>
+//class c_typed_handle : public c_handle
+//{
+//public:
+//	t_type* get_pointer();
+//	const t_type* get_pointer_const();
+//};
 
 
 

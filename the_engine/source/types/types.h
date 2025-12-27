@@ -25,10 +25,10 @@ enum e_invalid
 {
 	k_invalid = -1
 };
-template<typename t_type> inline bool operator==(const t_type& lhs, const e_invalid& rhs) { return static_cast<t_type>(k_invalid) == lhs; }
-template<typename t_type> inline bool operator==(const e_invalid& lhs, const t_type& rhs) { return static_cast<t_type>(k_invalid) == rhs; }
-template<typename t_type> inline bool operator!=(const t_type& lhs, const e_invalid& rhs) { return !(lhs == rhs); }
-template<typename t_type> inline bool operator!=(const e_invalid& lhs, const t_type& rhs) { return !(lhs == rhs); }
+template<typename t_type> inline constexpr bool operator==(const t_type& lhs, const e_invalid& rhs) { return static_cast<t_type>(k_invalid) == lhs; }
+template<typename t_type> inline constexpr bool operator==(const e_invalid& lhs, const t_type& rhs) { return static_cast<t_type>(k_invalid) == rhs; }
+template<typename t_type> inline constexpr bool operator!=(const t_type& lhs, const e_invalid& rhs) { return !(lhs == rhs); }
+template<typename t_type> inline constexpr bool operator!=(const e_invalid& lhs, const t_type& rhs) { return !(lhs == rhs); }
 
 
 const char k_char_max = 0xF;
@@ -42,6 +42,7 @@ const int64 k_int64_max = 0x7FFFFFFFFFFFFFFF;
 const uint8 k_uint8_max = 0xFF;
 const uint16 k_uint16_max = 0xFFFF;
 const uint32 k_uint32_max = 0xFFFFFFFF;
+const uint64 k_uint64_max = 0xFFFFFFFFFFFFFFFF;
 
 const real32 k_real32_min = 1.175494351e-38F;
 const real32 k_real32_max = 3.402823466e+38f;

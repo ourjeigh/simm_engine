@@ -20,7 +20,6 @@
 	} while (0)
 
 #define HALT_UNIMPLEMENTED() HALT("Unimplemented")
-#define STATIC_ASSERT(condition) static_assert(condition)
 
 
 void assert_internal(const char* condition, const char *file, const long line);

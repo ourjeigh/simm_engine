@@ -193,7 +193,7 @@ void c_audio_render_thread::render_audio()
 		ASSERT(g_audio_output_ring_buffer.channel_count() == g_audio_format.channel_count);
 		IF_DEBUG(int32 read_samples = ) g_audio_output_ring_buffer.read_interleaved(buffer, buffer_size);
 
-#ifdef DEBUG
+#ifdef CONFIG_DEBUG
 		// once we have begun reading, we should always be able to read the full amount
 		// anything else will result in an audible pop which we never want.
 		if (read_samples > 0)

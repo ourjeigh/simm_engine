@@ -2,23 +2,45 @@
 #define __ALLOCATOR_H__
 #pragma once
 
+#include "config.h"
+#include "structures/array.h"
 #include <types/types.h>
 
+#ifdef MEMORY_TRACKING_ENABLED
+struct s_memory_tracker
+{
+	const char* system_name;
+	const char* subsystem_name;
+	const char* file;
+	const char* function;
+	uint32 line;
+};
+#endif
+
+class i_allocator
+{
+public:
+	virtual void* allocate(uint64 size, uint64 align) = 0;
+	virtual void free(void* memory) = 0;
+};
+
 typedef uint64 t_stack_allocator_marker;
-class c_stack_allocator
+class c_stack_allocator : i_allocator
 {
 public:
 	c_stack_allocator(void* memory, uint64 size);
 
-	void* allocate(uint64 size, uint64 align);
+	void* allocate(uint64 size, uint64 align) override;
 	void* allocate(uint64 size, uint64 align, t_stack_allocator_marker& out_marker);
 	bool is_marker_valid(t_stack_allocator_marker marker) const;
+	void free(void* memory) override {} // NOP
 	void free_to_marker(t_stack_allocator_marker marker);
 	void clear();
 private:
 	uint64 m_top;
 	uint64 m_base;
 	uint64 m_end;
+
 };
 
 template<uint64 k_size>

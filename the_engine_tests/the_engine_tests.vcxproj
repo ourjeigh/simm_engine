@@ -80,6 +80,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="algorithm_tests.cpp" />
     <ClCompile Include="array_tests.cpp" />
     <ClCompile Include="audio_tests.cpp" />
     <ClCompile Include="file_tests.cpp" />

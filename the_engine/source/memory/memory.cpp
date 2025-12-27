@@ -2,21 +2,24 @@
 #include "memory/memory.h"
 #include <types/types.h>
 
-c_handle::c_handle(c_handle&& other)
-{
-}
-
-c_handle& c_handle::operator=(c_handle&& other)
-{
-}
-
-void* c_handle::get_pointer()
-{
-}
-
-const void* c_handle::get_pointer_const()
-{
-}
+//c_handle::c_handle(c_handle&& other)
+//{
+//}
+//
+//c_handle& c_handle::operator=(c_handle&& other)
+//{
+//	return *this;
+//}
+//
+//void* c_handle::get_pointer()
+//{
+//	return nullptr;
+//}
+//
+//const void* c_handle::get_pointer_const()
+//{
+//	return nullptr;
+//}
 
 void memory_zero(void* obj, size_t size)
 {

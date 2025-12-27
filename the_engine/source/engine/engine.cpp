@@ -61,8 +61,6 @@ static bool init_internal()
 	s_log_config log_settings;
 	log_settings.log_to_console = true;
 	log_system_init(log_settings);
-	int32 time = 7;
-	log(verbose, "hellow world %i", time);
 
 	engine_systems_init();
 
