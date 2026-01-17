@@ -40,10 +40,90 @@ int WINAPI wWinMain(
 	return 0;
 }
 
+
+const int32 k_window_max_height = 2400;
+const int32 k_window_max_width = 3840;
+const int32 k_window_buffer_size = k_window_max_height * k_window_max_width;
+
+struct s_backbuffer
+{
+	int width;
+	int height;
+	BITMAPINFO bmi;
+	//void* memory;
+	c_array<uint32, k_window_buffer_size> memory;
+};
+
+static s_backbuffer g_backbuffer = {};
+
+void resize_backbuffer(HWND hwnd, int width, int height)
+{
+	g_backbuffer.width = width;
+	g_backbuffer.height = height;
+
+	g_backbuffer.bmi = {};
+	g_backbuffer.bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	g_backbuffer.bmi.bmiHeader.biWidth = width;
+	g_backbuffer.bmi.bmiHeader.biHeight = -height; // top-down
+	g_backbuffer.bmi.bmiHeader.biPlanes = 1;
+	g_backbuffer.bmi.bmiHeader.biBitCount = 32;
+	g_backbuffer.bmi.bmiHeader.biCompression = BI_RGB;
+
+	/*size_t bufferSize = width * height * sizeof(uint32);
+	g_backbuffer.memory = VirtualAlloc(
+		nullptr,
+		bufferSize,
+		MEM_RESERVE | MEM_COMMIT,
+		PAGE_READWRITE
+	);*/
+}
+
+void Render()
+{
+	//uint32* pixels = (uint32*)g_backbuffer.memory;
+	uint32* pixels = g_backbuffer.memory.data();
+
+	// Clear to dark gray
+	for (int y = 0; y < g_backbuffer.height; y++)
+	{
+		for (int x = 0; x < g_backbuffer.width; x++)
+		{
+			pixels[y * g_backbuffer.width + x] = 0xFF202020;
+		}
+	}
+
+	// Simple test rectangle
+	for (int y = 50; y < 150; y++)
+	{
+		for (int x = 50; x < 200; x++)
+		{
+			pixels[y * g_backbuffer.width + x] = 0xFFFF0000; // red
+		}
+	}
+}
+
+void Present(HWND hwnd)
+{
+	HDC hdc = GetDC(hwnd);
+
+	StretchDIBits(
+		hdc,
+		0, 0, g_backbuffer.width, g_backbuffer.height,
+		0, 0, g_backbuffer.width, g_backbuffer.height,
+		g_backbuffer.memory.data(),
+		//g_backbuffer.memory,
+		&g_backbuffer.bmi,
+		DIB_RGB_COLORS,
+		SRCCOPY
+	);
+
+	ReleaseDC(hwnd, hdc);
+}
+
 void create_window(HINSTANCE instance)
 {
 	// Register the window class.
-	const char* CLASS_NAME = "SiMM Window";
+	const char* CLASS_NAME = k_application_name;
 
 	WNDCLASS window_class = { };
 
@@ -83,6 +163,9 @@ void create_window(HINSTANCE instance)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 
+		Render();
+		Present(hwnd);
+
 		// this should be moved to engine code and signalled to the message thread
 		const c_key_state* escape_key = input_system_get_key_state(_input_key_special_esc);
 		if (escape_key != nullptr && escape_key->is_down())
@@ -112,11 +195,9 @@ LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPA
 
 	if (msg == WM_SIZE)
 	{
-		//SIZE_RESTORED
-		//SIZE_MINIMIZED
-		//SIZE_MAXIMIZED
-		//SIZE_MAXSHOW
-		//SIZE_MAXHIDE
+		RECT r;
+		GetClientRect(hwnd, &r);
+		resize_backbuffer(hwnd, r.right - r.left, r.bottom - r.top);
 		return 0;
 	}
 
@@ -136,12 +217,7 @@ LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPA
 	// move to some kind of render?
 	if (msg == WM_PAINT)
 	{
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hwnd, &ps);
-
-		// All painting occurs here, between BeginPaint and EndPaint.
-		FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
-		EndPaint(hwnd, &ps);
+		ValidateRect(hwnd, nullptr);
 		return 0;
 	}
 
