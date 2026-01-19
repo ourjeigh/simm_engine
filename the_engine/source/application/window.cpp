@@ -7,14 +7,22 @@
 //remove
 const char* k_application_name = "SiMM Engine";
 
+struct s_window_thread_params
+{
+	HINSTANCE instance;
+	c_window* window;
+};
+
 LRESULT CALLBACK process_message_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void create_window(HINSTANCE instance);
+void window_thread_entry_point(c_window* window);
+
 
 void c_window::init()
 {
 	c_thread window_thread;
-	HINSTANCE hInstance = GetModuleHandle(nullptr);
-	window_thread.create(THREAD_FUNCTION(create_window), THREAD_ARGS(hInstance), WIDE("Window Thread"));
+	m_instance = GetModuleHandle(nullptr);
+
+	window_thread.create(THREAD_FUNCTION(window_thread_entry_point), THREAD_ARGS(this), WIDE("Window Thread"));
 	window_thread.start();
 }
 
@@ -93,7 +101,7 @@ void present(HWND hwnd)
 	ReleaseDC(hwnd, hdc);
 }
 
-void create_window(HINSTANCE instance)
+void window_thread_entry_point(c_window* window)
 {
 	// Register the window class.
 	const char* CLASS_NAME = k_application_name;
@@ -101,7 +109,7 @@ void create_window(HINSTANCE instance)
 	WNDCLASS window_class = {};
 
 	window_class.lpfnWndProc = process_message_callback;
-	window_class.hInstance = instance;
+	window_class.hInstance = window->m_instance;
 	window_class.lpszClassName = CLASS_NAME;
 
 	RegisterClass(&window_class);
@@ -116,7 +124,7 @@ void create_window(HINSTANCE instance)
 		CW_USEDEFAULT, CW_USEDEFAULT,	// Size (Width Height)
 		NULL,							// Parent window
 		NULL,							// Menu
-		instance,						// Instance handle
+		window->m_instance,						// Instance handle
 		NULL							// Additional application data
 	);
 
@@ -124,6 +132,21 @@ void create_window(HINSTANCE instance)
 	{
 		return;
 	}
+
+	SetLastError(0);
+
+	LONG_PTR windowptr = reinterpret_cast<LONG_PTR>(window);
+	auto result = SetWindowLongPtr(
+		hwnd,
+		GWLP_USERDATA,
+		windowptr);
+
+	if (result == 0)
+	{
+		HRESULT result = HRESULT_FROM_WIN32 (GetLastError());
+		NOP();
+	}
+
 
 	ShowWindow(hwnd, SW_SHOWDEFAULT);
 
@@ -151,6 +174,18 @@ void create_window(HINSTANCE instance)
 
 LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPARAM lParam)
 {
+	LONG_PTR user_data = GetWindowLongPtr(
+		hwnd,
+		GWLP_USERDATA
+	);
+
+	c_window* window = reinterpret_cast<c_window*>(user_data);
+
+	if (window == nullptr)
+	{
+		NOP();
+	}
+
 	if (msg == WM_CLOSE)
 	{
 		PostQuitMessage(0);
@@ -180,6 +215,10 @@ LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPA
 	if (msg == WM_SETFOCUS || msg == WM_KILLFOCUS)
 	{
 		// handle focus change
+
+		s_window_event event;
+		event.test = 24;
+		window->send_window_event(event);
 		return 0;
 	}
 

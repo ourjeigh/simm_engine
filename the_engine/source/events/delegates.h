@@ -43,7 +43,12 @@ public:
 		return m_thunk(m_object, args...);
 	}
 
-	explicit operator bool() const
+	//explicit operator bool() const
+	//{
+	//	return m_thunk != nullptr;
+	//}
+
+	bool is_valid()
 	{
 		return m_thunk != nullptr;
 	}
