@@ -83,6 +83,7 @@
     <ClCompile Include="algorithm_tests.cpp" />
     <ClCompile Include="array_tests.cpp" />
     <ClCompile Include="audio_tests.cpp" />
+    <ClCompile Include="callback_tests.cpp" />
     <ClCompile Include="file_tests.cpp" />
     <ClCompile Include="math_tests.cpp" />
     <ClCompile Include="memory_tests.cpp" />
