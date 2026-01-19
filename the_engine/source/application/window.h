@@ -4,7 +4,7 @@
 
 #include <asserts.h>
 #include <memory>
-#include "callbacks.h"
+#include "events/callbacks.h"
 
 struct s_window_event
 {

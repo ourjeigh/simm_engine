@@ -127,9 +127,10 @@
   <ItemGroup>
     <ClInclude Include="source\application\application.h" />
     <ClInclude Include="source\algorithms\algorithms.h" />
-    <ClInclude Include="source\callbacks.h" />
+    <ClInclude Include="source\events\callbacks.h" />
     <ClInclude Include="source\config.h" />
     <ClInclude Include="source\asserts.h" />
+    <ClInclude Include="source\events\delegates.h" />
     <ClInclude Include="source\engine\audio\audio_buffer.h" />
     <ClInclude Include="source\engine\audio\audio_sink.h" />
     <ClInclude Include="source\engine\audio\audio_source.h" />
