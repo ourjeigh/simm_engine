@@ -5,7 +5,7 @@
 //#include <engine/input/input_map.h>
 //#include "memory/memory.h"
 //#include <threads/threads.h>
-//#include <logging/logging.h>
+//#include <debug/logging.h>
 //
 #include "application/application.h"
 #include "platform/platform.h"
@@ -17,15 +17,13 @@ IGNORE_WINDOWS_WARNINGS_PUSH
 #include <windows.h>
 IGNORE_WINDOWS_WARNINGS_POP
 
-//const char* k_application_name = "SiMM Engine";
-
 c_application g_application;
 
 int main(int argc, char** argv)
 {
-	//engine_init();
-	
-
+	g_application.init();
+	g_application.run();
+	g_application.term();
 	return 0;
 }
 
@@ -35,14 +33,10 @@ int WINAPI wWinMain(
 	_In_ LPWSTR lpCmdLine,
 	_In_ int nShowCmd)
 {
-	
+	g_application.init();
 	g_application.run();
-	/*c_application* application = new c_application();
-	application->run();
-	delete application;*/
-	
+	g_application.term();
 	return 0;
 }
-
 
 #endif // PLATFORM_WINDOWS

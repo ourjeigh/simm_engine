@@ -2,7 +2,7 @@
 #ifdef PLATFORM_WINDOWS
 
 #include "audio_sink.h"
-#include "logging/logging.h"
+#include "debug/logging.h"
 #include <asserts.h>
 #include "platform/platform.h"
 

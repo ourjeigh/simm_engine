@@ -3,8 +3,9 @@
 #pragma once
 
 #include "types/types.h"
-//#include "asserts.h"
 #include "platform/platform.h"
+
+#ifdef PLATFORM_WINDOWS
 
 IGNORE_WINDOWS_WARNINGS_PUSH
 #include <windows.h>
@@ -125,54 +126,56 @@ const uint16 k_input_id_gamepad_r_thumb_left =	VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT;
 // unused
 enum e_input_keycode : uint16
 {
-	_input_key_num_0,
-	_input_key_num_1,
-	_input_key_num_2,
-	_input_key_num_3,
-	_input_key_num_4,
-	_input_key_num_5,
-	_input_key_num_6,
-	_input_key_num_7,
-	_input_key_num_8,
-	_input_key_num_9,
-	_input_key_char_a,
-	_input_key_char_b,
-	_input_key_char_c,
-	_input_key_char_d,
-	_input_key_char_e,
-	_input_key_char_f,
-	_input_key_char_g,
-	_input_key_char_h,
-	_input_key_char_i,
-	_input_key_char_j,
-	_input_key_char_k,
-	_input_key_char_l,
-	_input_key_char_m,
-	_input_key_char_n,
-	_input_key_char_o,
-	_input_key_char_p,
-	_input_key_char_q,
-	_input_key_char_r,
-	_input_key_char_s,
-	_input_key_char_t,
-	_input_key_char_u,
-	_input_key_char_v,
-	_input_key_char_w,
-	_input_key_char_x,
-	_input_key_char_y,
-	_input_key_char_z,
-	_input_key_special_shift,
-	_input_key_special_control,
-	_input_key_special_alt,
-	_input_key_special_esc,
+	input_key_num_0,
+	input_key_num_1,
+	input_key_num_2,
+	input_key_num_3,
+	input_key_num_4,
+	input_key_num_5,
+	input_key_num_6,
+	input_key_num_7,
+	input_key_num_8,
+	input_key_num_9,
+	input_key_char_a,
+	input_key_char_b,
+	input_key_char_c,
+	input_key_char_d,
+	input_key_char_e,
+	input_key_char_f,
+	input_key_char_g,
+	input_key_char_h,
+	input_key_char_i,
+	input_key_char_j,
+	input_key_char_k,
+	input_key_char_l,
+	input_key_char_m,
+	input_key_char_n,
+	input_key_char_o,
+	input_key_char_p,
+	input_key_char_q,
+	input_key_char_r,
+	input_key_char_s,
+	input_key_char_t,
+	input_key_char_u,
+	input_key_char_v,
+	input_key_char_w,
+	input_key_char_x,
+	input_key_char_y,
+	input_key_char_z,
+	input_key_special_shift,
+	input_key_special_control,
+	input_key_special_alt,
+	input_key_special_esc,
 
-	k_input_key_first_num = _input_key_num_0,
-	k_input_key_last_num = _input_key_num_9,
+	k_input_key_first_num = input_key_num_0,
+	k_input_key_last_num = input_key_num_9,
 
-	k_input_key_first_char = _input_key_char_a,
-	k_input_key_last_char = _input_key_char_z,
+	k_input_key_first_char = input_key_char_a,
+	k_input_key_last_char = input_key_char_z,
 
-	k_input_key_first_special = _input_key_special_shift,
-	k_input_key_last_special = _input_key_special_esc,
+	k_input_key_first_special = input_key_special_shift,
+	k_input_key_last_special = input_key_special_esc,
 };
+#endif //PLATFORM_WINDOWS
+
 #endif //__INPUT_MAP_H__

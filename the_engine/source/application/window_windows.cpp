@@ -1,26 +1,27 @@
+#include "config.h"
+#ifdef PLATFORM_WINDOWS
+
 #include "window.h"
+
+#include "engine/input/input_system.h"
+#include "debug/logging.h"
+#include "platform/platform.h"
 #include "structures/array.h"
-#include <threads/threads.h>
+#include "threads/threads.h"
+
+IGNORE_WINDOWS_WARNINGS_PUSH
 #include "windows.h"
-#include <engine/input/input_system.h>
+IGNORE_WINDOWS_WARNINGS_POP
 
 //remove
 const char* k_application_name = "SiMM Engine";
 
-struct s_window_thread_params
-{
-	HINSTANCE instance;
-	c_window* window;
-};
-
 LRESULT CALLBACK process_message_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void window_thread_entry_point(c_window* window);
-
 
 void c_window::init()
 {
 	c_thread window_thread;
-	m_instance = GetModuleHandle(nullptr);
 
 	window_thread.create(THREAD_FUNCTION(window_thread_entry_point), THREAD_ARGS(this), WIDE("Window Thread"));
 	window_thread.start();
@@ -40,7 +41,6 @@ struct s_backbuffer
 	int width;
 	int height;
 	BITMAPINFO bmi;
-	//void* memory;
 	c_array<uint32, k_window_buffer_size> memory;
 };
 
@@ -62,9 +62,6 @@ void resize_backbuffer(HWND hwnd, int width, int height)
 
 void render()
 {
-	//uint32* pixels = (uint32*)g_backbuffer.memory;
-	//auto pixels = .data();
-
 	// Clear to dark gray
 	for (int y = 0; y < g_backbuffer.height; y++)
 	{
@@ -106,10 +103,12 @@ void window_thread_entry_point(c_window* window)
 	// Register the window class.
 	const char* CLASS_NAME = k_application_name;
 
+	HINSTANCE instance = GetModuleHandle(nullptr);
+
 	WNDCLASS window_class = {};
 
 	window_class.lpfnWndProc = process_message_callback;
-	window_class.hInstance = window->m_instance;
+	window_class.hInstance = instance;
 	window_class.lpszClassName = CLASS_NAME;
 
 	RegisterClass(&window_class);
@@ -124,12 +123,13 @@ void window_thread_entry_point(c_window* window)
 		CW_USEDEFAULT, CW_USEDEFAULT,	// Size (Width Height)
 		NULL,							// Parent window
 		NULL,							// Menu
-		window->m_instance,						// Instance handle
+		instance,						// Instance handle
 		NULL							// Additional application data
 	);
 
 	if (hwnd == NULL)
 	{
+		log(error, "windows: failed to create window");
 		return;
 	}
 
@@ -162,77 +162,91 @@ void window_thread_entry_point(c_window* window)
 		render();
 		present(hwnd);
 
-		// this should be moved to engine code and signalled to the message thread
-		const c_key_state* escape_key = input_system_get_key_state(_input_key_special_esc);
-		if (escape_key != nullptr && escape_key->is_down())
-		{
-			quit = true;
-		}
+		//// this should be moved to engine code and signalled to the message thread
+		//const c_key_state* escape_key = input_system_get_key_state(_input_key_special_esc);
+		//if (escape_key != nullptr && escape_key->is_down())
+		//{
+		//	quit = true;
+		//}
 	}
-
 }
 
 LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPARAM lParam)
 {
-	LONG_PTR user_data = GetWindowLongPtr(
-		hwnd,
-		GWLP_USERDATA
-	);
-
+	LONG_PTR user_data = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	c_window* window = reinterpret_cast<c_window*>(user_data);
-
-	if (window == nullptr)
-	{
-		NOP();
-	}
-
-	if (msg == WM_CLOSE)
-	{
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	if (msg == WM_DESTROY)
-	{
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	if (msg == WM_QUIT)
-	{
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	if (msg == WM_SIZE)
-	{
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-		resize_backbuffer(hwnd, rect.right - rect.left, rect.bottom - rect.top);
-		return 0;
-	}
-
-	if (msg == WM_SETFOCUS || msg == WM_KILLFOCUS)
-	{
-		// handle focus change
-
-		s_window_event event;
-		event.test = 24;
-		window->send_window_event(event);
-		return 0;
-	}
-
 	
-	if (msg == WM_PAINT)
+	if (window != nullptr)
 	{
-		ValidateRect(hwnd, nullptr);
-		return 0;
+
+		if (msg == WM_CLOSE || msg == WM_DESTROY || msg == WM_QUIT)
+		{
+			s_window_event_close event;
+			window->send_window_event(event);
+
+			PostQuitMessage(0);
+			return 0;
+		}
+
+		if (msg == WM_SIZE)
+		{
+			RECT rect;
+			GetClientRect(hwnd, &rect);
+			int32 height = rect.bottom - rect.top;
+			int32 width = rect.right - rect.left;
+			resize_backbuffer(hwnd, width, height);
+
+			s_window_event_resize event;
+			event.height = height;
+			event.width = width;
+			window->send_window_event(event);
+
+			return 0;
+		}
+
+		if (msg == WM_SETFOCUS || msg == WM_KILLFOCUS)
+		{
+			s_window_event_focus event;
+			event.is_in_focus = msg == WM_SETFOCUS;
+			window->send_window_event(event);
+
+			return 0;
+		}
+
+		if (msg == WM_KEYDOWN || msg == WM_KEYUP)
+		{
+			uint16 repeat_count = 0;
+			
+			bool is_repeat = (HIWORD(lParam) & KF_REPEAT) == KF_REPEAT;
+
+			if (is_repeat)
+			{
+				repeat_count = LOWORD(lParam);
+			}
+
+			s_input_key_event event;
+			event.message = msg;
+			event.param = param;
+			event.down = msg == WM_KEYDOWN;
+			event.repeat_count = repeat_count;
+
+			window->send_window_event(event);
+
+			// temp, remove
+			input_system_queue_message(msg, param);
+
+			return 0;
+		}
+	
+		if (msg == WM_PAINT)
+		{
+			ValidateRect(hwnd, nullptr);
+			return 0;
+		}
 	}
 
-	if (input_system_queue_message(msg, param))
-	{
-		return 0;
-	}
 
 	return DefWindowProc(hwnd, msg, param, lParam);
 }
+
+#endif //PLATFORM_WINDOWS

@@ -1,5 +1,5 @@
 #include "threads.h"
-#include <logging/logging.h>
+#include <debug/logging.h>
 
 #include "platform/platform.h"
 

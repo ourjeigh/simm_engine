@@ -2,9 +2,6 @@
 #define __ASSERTS_H__
 #pragma once
 
-
-
-// TODO: figure out why this doesn't pass the correct string to gtests EXPECT_DEATH
 #define ASSERT(condition) \
 	do { \
 		if (!(condition)) { \
@@ -20,7 +17,6 @@
 	} while (0)
 
 #define HALT_UNIMPLEMENTED() HALT("Unimplemented")
-
 
 void assert_internal(const char* condition, const char *file, const long line);
 void halt_internal(const char* message, const char* file, const long line);

@@ -1,7 +1,7 @@
 #include "pch.h"
 
 // need to figure out why this isn't getting linked properly
-#include "time/time.cpp"
+#include "time/time.h"
 #include <asserts.h>
 #include <platform/platform.h>
 

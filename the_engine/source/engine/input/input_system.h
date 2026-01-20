@@ -6,41 +6,58 @@
 #include <types/types.h>
 #include <time/time.h>
 #include "input_map.h"
+#include "events/events.h"
 
 typedef uint16 t_message_id;
 typedef uint64 t_param;
 
 const real64 k_input_keydown_allowance_seconds = 0.01f;
 
-enum e_input_event_type : byte
+struct s_input_event : s_event
 {
-	_input_event_type_none,
-	_input_event_type_key_down,
-	_input_event_type_key_up,
+	e_event_category get_category() { return window_event_type_input; }
+};
+
+struct s_input_key_event : s_input_event
+{
+	e_event_type get_type() { return event_type_input_key; }
+
+	bool down;
+	uint16 message;
+	uint64 param;
+	uint16 repeat_count;
+};
+
+struct s_input_mouse_event : s_input_event
+{
+	e_event_type get_type() { return event_type_input_mouse; }
+
+	int32 x;
+	int32 y;
+};
+
+struct s_input_controller_event : s_input_event
+{
+	e_event_type get_type() { return event_type_input_controller; }
 };
 
 enum e_input_event_key_type : byte
 {
-	_input_event_key_type_none,
-	_input_event_key_type_num,
-	_input_event_key_type_char,
-	_input_event_key_type_special,
+	input_event_key_type_none,
+	input_event_key_type_num,
+	input_event_key_type_char,
+	input_event_key_type_special,
 };
 
 enum e_input_event_key_special : byte
 {
-	_input_event_key_special_shift,
-	_input_event_key_special_control,
-	_input_event_key_special_alt,
-	_input_event_key_special_esc,
+	input_event_key_special_shift,
+	input_event_key_special_control,
+	input_event_key_special_alt,
+	input_event_key_special_esc,
 };
 
-struct s_input_queued_event
-{
-	t_message_id message_id;
-	t_param param;
-	t_timestamp timestamp;
-};
+
 
 class c_key_state
 {
@@ -48,7 +65,7 @@ public:
 	c_key_state() :
 		m_is_down(false),
 		m_last_changed_timestamp(0),
-		m_key_type(_input_event_key_type_none),
+		m_key_type(input_event_key_type_none),
 		u_keycode_num(0)
 	{
 	}
@@ -60,7 +77,7 @@ public:
 		auto span = get_time_since(m_last_changed_timestamp);
 		real64 duration_seconds = span.get_duration_seconds();
 
-		return  (duration_seconds < k_input_keydown_allowance_seconds);
+		return (duration_seconds < k_input_keydown_allowance_seconds);
 	}
 	
 	t_timestamp get_last_changed_timestamp() const { return m_last_changed_timestamp; }
@@ -95,6 +112,8 @@ public:
 	virtual void update() override;
 
 };
+
+void input_system_handle_event(s_event& event);
 
 bool input_system_queue_message(t_message_id message_id, t_param param);
 const c_key_state* input_system_get_key_state(e_input_keycode key);

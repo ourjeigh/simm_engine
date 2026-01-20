@@ -1,5 +1,5 @@
 #include "audio_system.h"
-#include <logging/logging.h>
+#include <debug/logging.h>
 #include <threads/threads.h>
 #include <time/time.h>
 #include <asserts.h>

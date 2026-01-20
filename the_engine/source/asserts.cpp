@@ -1,5 +1,5 @@
 #include "asserts.h"
-#include <logging/logging.h>
+#include <debug/logging.h>
 #include "platform/platform.h"
 
 IGNORE_WINDOWS_WARNINGS_PUSH
