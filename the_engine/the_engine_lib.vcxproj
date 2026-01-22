@@ -111,6 +111,7 @@
     <ClCompile Include="source\engine\engine_system.cpp" />
     <ClCompile Include="source\engine\engine_system.h" />
     <ClCompile Include="source\engine\file_system\file.cpp" />
+    <ClCompile Include="source\engine\input\input_map_windows.cpp" />
     <ClCompile Include="source\engine\input\input_system.cpp" />
     <ClCompile Include="source\debug\logging.cpp" />
     <ClCompile Include="source\main.cpp" />

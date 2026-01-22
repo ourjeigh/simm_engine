@@ -13,6 +13,27 @@ typedef uint64 t_param;
 
 const real64 k_input_keydown_allowance_seconds = 0.01f;
 
+struct s_input_event_mouse_data
+{
+	// does mouse data need to track button down?
+	// it might make more sense to treat buttons as keys
+	int32 x;
+	int32 y;
+};
+
+struct s_input_event_key_data
+{
+	e_input_keycode key;
+	//t_param param;
+	uint16 repeat_count;
+	bool down;
+};
+
+struct s_input_event_controller_data
+{
+	// literally who knows
+};
+
 struct s_input_event : s_event
 {
 	e_event_category get_category() { return window_event_type_input; }
@@ -26,19 +47,22 @@ struct s_input_key_event : s_input_event
 	uint16 message;
 	uint64 param;
 	uint16 repeat_count;
+
+	s_input_event_key_data data;
 };
 
 struct s_input_mouse_event : s_input_event
 {
 	e_event_type get_type() { return event_type_input_mouse; }
 
-	int32 x;
-	int32 y;
+	s_input_event_mouse_data data;
 };
 
 struct s_input_controller_event : s_input_event
 {
 	e_event_type get_type() { return event_type_input_controller; }
+
+	s_input_event_controller_data data;
 };
 
 enum e_input_event_key_type : byte

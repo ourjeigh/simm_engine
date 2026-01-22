@@ -174,9 +174,15 @@ public:
 		this->m_data[++m_top] = item;
 	}
 
+	//void pushptr(t_type& item)
+	//{
+	//	ASSERT(!full());
+	//	this->m_data[++m_top] = item;
+	//}
+
 	t_type& push()
 	{
-		ASSERT(!full);
+		ASSERT(!full());
 		return this->m_data[++m_top];
 	}
 

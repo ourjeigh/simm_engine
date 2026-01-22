@@ -225,15 +225,10 @@ LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPA
 			}
 
 			s_input_key_event event;
-			event.message = msg;
-			event.param = param;
-			event.down = msg == WM_KEYDOWN;
-			event.repeat_count = repeat_count;
-
+			event.data.key = get_key_code_from_platform_key(param);
+			event.data.repeat_count = repeat_count;
+			event.data.down = msg == WM_KEYDOWN;
 			window->send_window_event(event);
-
-			// temp, remove
-			input_system_queue_message(msg, param);
 
 			return 0;
 		}
