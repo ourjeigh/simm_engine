@@ -25,10 +25,12 @@ struct s_input_queued_event
 struct s_input_state
 {
 	c_array<c_key_state, k_input_key_count> key_states;
-	
+	c_mouse_state mouse_state;
+
 	void clear()
 	{
 		zero_object(key_states);
+		zero_object(mouse_state);
 	}
 };
 
@@ -42,9 +44,15 @@ void process_input_event_queue_internal();
 c_stack<s_input_queued_event, 256> g_input_event_queue;
 s_input_state g_input_state;
 
+// ew - need a better method for access to the global input system
+c_input_system* c_input_system::m_system = nullptr;
+
 // public methods
 void c_input_system::init()
 {
+	ASSERT(c_input_system::m_system == nullptr);
+
+	c_input_system::m_system = this;
 	g_input_event_queue.clear();
 	g_input_state.clear();
 	log(verbose, "Input System Initialized");
@@ -53,21 +61,50 @@ void c_input_system::init()
 void c_input_system::term()
 {
 	g_input_state.clear();
+	c_input_system::m_system = nullptr;
 	log(verbose, "Input System Terminated");
 }
 
 void c_input_system::update()
 {
-	//log(verbose, "Input System Update");
-	
-	// we probably want to move input processing to a different thread that can run as fast as possible to reduce input latency
 	process_input_event_queue_internal();
+
+	// todo, let external systems subscribe to a callback for certain key combos (even if that's a single key)
+	// eg, call engine.handle_terminate_request when 'esc' is pressed.
+
+	for (auto& combo : m_key_combo_callbacks)
+	{
+		bool down = true;
+
+		// todo: we should generate a bitmask of keystate above, each combo could actually just store it's own
+		// mask and we just compare them instead of iterating each key in the combo
+		for (auto& key : combo.combo.keys)
+		{
+			down &= g_input_state.key_states[key].is_down();
+		}
+
+		if (down)
+		{
+			combo.callback(down);
+		}
+	}
 }
 
 const c_key_state* input_system_get_key_state(e_input_keycode key)
 {
 	return &g_input_state.key_states[key];
 }
+
+const c_mouse_state* input_system_get_mouse_state()
+{
+	return &g_input_state.mouse_state;
+}
+
+const c_input_system* get_input_system_const()
+{
+	return c_input_system::m_system;
+}
+
 
 void input_system_handle_event(s_event& event)
 {
@@ -87,6 +124,7 @@ void input_system_handle_event(s_event& event)
 	}
 	case event_type_input_mouse:
 	{
+		// this only coveres mouse position, not buttons or scroll...
 		s_input_mouse_event& mouse_event = static_cast<s_input_mouse_event&>(event);
 		new_queue.mouse_data = mouse_event.data;
 		break;
@@ -106,6 +144,7 @@ void input_system_handle_event(s_event& event)
 
 void process_input_event_queue_internal()
 {
+	// todo: record input to file if setting enabled, to allow for automated playback
 	while(!g_input_event_queue.empty())
 	{
 		s_input_queued_event event = g_input_event_queue.top();
@@ -125,6 +164,14 @@ void process_input_event_queue_internal()
 			break;
 		}
 		case event_type_input_mouse:
+		{
+			s_input_event_mouse_data& data = event.mouse_data;
+			g_input_state.mouse_state.position.x =  event.mouse_data.x;
+			g_input_state.mouse_state.position.y = event.mouse_data.y;
+			g_input_state.mouse_state.position.last_changedtimestamp = event.timestamp;
+			log(verbose, "input system: mouse position x:%i y:%i", data.x, data.y);
+			break;
+		}
 		case event_type_input_controller:
 			HALT_UNIMPLEMENTED();
 		}

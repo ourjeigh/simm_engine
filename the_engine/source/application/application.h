@@ -13,6 +13,7 @@ public:
 	void term();
 	void run();
 	void handle_window_event(s_event& event);
+	void handle_escape_key(bool down);
 private:
 	c_window m_window;
 	bool m_running;

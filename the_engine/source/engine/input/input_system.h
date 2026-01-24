@@ -7,6 +7,8 @@
 #include <time/time.h>
 #include "input_map.h"
 #include "events/events.h"
+#include <events/delegates.h>
+#include <structures/array.h>
 
 typedef uint16 t_message_id;
 typedef uint64 t_param;
@@ -43,11 +45,6 @@ struct s_input_key_event : s_input_event
 {
 	e_event_type get_type() { return event_type_input_key; }
 
-	bool down;
-	uint16 message;
-	uint64 param;
-	uint16 repeat_count;
-
 	s_input_event_key_data data;
 };
 
@@ -81,16 +78,12 @@ enum e_input_event_key_special : byte
 	input_event_key_special_esc,
 };
 
-
-
 class c_key_state
 {
 public:
 	c_key_state() :
 		m_is_down(false),
-		m_last_changed_timestamp(0),
-		m_key_type(input_event_key_type_none),
-		u_keycode_num(0)
+		m_last_changed_timestamp(0)
 	{
 	}
 
@@ -118,15 +111,51 @@ public:
 private:
 	bool m_is_down;
 	t_timestamp m_last_changed_timestamp;
-
-	e_input_event_key_type m_key_type;
-	union
-	{
-		uint8 u_keycode_num;
-		char u_keycode_char;
-		e_input_event_key_special u_keycode_special;
-	};
 };
+
+struct s_mouse_position_state
+{
+	int32 x;
+	int32 y;
+	t_timestamp last_changedtimestamp;
+};
+
+struct s_mouse_scroll_state
+{
+	int32 position;
+	t_timestamp last_changedtimestamp;
+};
+
+// button state is in key state
+class c_mouse_state
+{
+public:
+	// todo make setters
+	s_mouse_position_state position;
+	s_mouse_scroll_state horizontal_scroll;
+	s_mouse_scroll_state vertical_scroll;
+};
+
+struct s_key_combo
+{
+	c_stack<e_input_keycode, 8> keys;
+};
+
+using t_key_combo_callback = void(bool);
+
+struct s_key_combo_delegate
+{
+	s_key_combo combo;
+	c_delegate<t_key_combo_callback> callback;
+};
+
+/// <summary>
+/// key combo thoughts:
+/// - a system can subscribe to a key combo to be notified when all keys in the combo are either up or down
+/// - if a system wants to subscribe to a key combo, it probably wants to know both when the key combo is fully down
+/// as well as when it's fully up.
+/// - we almost certainly just want edge triggering
+/// </summary>
 
 class c_input_system : public c_engine_system
 {
@@ -135,10 +164,32 @@ public:
 	virtual void term() override;
 	virtual void update() override;
 
+	template<typename... t_type>
+	static void add_key_combo_callback(c_delegate<t_key_combo_callback> callback, t_type... keys)
+	{
+		ASSERT(!c_input_system::m_system->m_key_combo_callbacks.full());
+
+		s_key_combo_delegate& new_combo = c_input_system::m_system->m_key_combo_callbacks.push();
+		new_combo.callback = callback;
+		new_combo.combo.keys.clear();
+
+		(new_combo.combo.keys.push(keys), ...);
+	}
+
+	static c_input_system* m_system;
+private:
+	c_stack<s_key_combo_delegate, 32> m_key_combo_callbacks;
 };
 
 void input_system_handle_event(s_event& event);
 
-bool input_system_queue_message(t_message_id message_id, t_param param);
 const c_key_state* input_system_get_key_state(e_input_keycode key);
+const c_mouse_state* input_system_get_mouse_state();
+const c_input_system* get_input_system_const();
+
+template<typename... e_input_keycode>
+static void input_system_add_key_combo_callback(c_delegate<t_key_combo_callback> callback, e_input_keycode... keys)
+{
+	c_input_system::m_system->add_key_combo_callback(callback, keys...);
+}
 #endif//__INPUT_SYSTEM_H__

@@ -192,7 +192,7 @@ inline real32 convert_sample_to_real32(byte* in, e_audio_sample_type sample_type
 	return out;
 }
 
-void c_audio_source_file_streamed::get_samples(c_audio_buffer<real32>& out_buffer)
+void c_audio_source_file_streamed::get_samples(t_audio_buffer_real32& out_buffer)
 {
 	const int32 sample_count = out_buffer.size();
 

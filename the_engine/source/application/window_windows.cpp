@@ -8,9 +8,11 @@
 #include "platform/platform.h"
 #include "structures/array.h"
 #include "threads/threads.h"
+#include "mmath.h"
 
 IGNORE_WINDOWS_WARNINGS_PUSH
 #include "windows.h"
+#include "windowsx.h"
 IGNORE_WINDOWS_WARNINGS_POP
 
 //remove
@@ -38,8 +40,8 @@ const int32 k_window_buffer_size = k_window_max_height * k_window_max_width;
 
 struct s_backbuffer
 {
-	int width;
-	int height;
+	int32 width;
+	int32 height;
 	BITMAPINFO bmi;
 	c_array<uint32, k_window_buffer_size> memory;
 };
@@ -62,6 +64,7 @@ void resize_backbuffer(HWND hwnd, int width, int height)
 
 void render()
 {
+
 	// Clear to dark gray
 	for (int y = 0; y < g_backbuffer.height; y++)
 	{
@@ -71,12 +74,20 @@ void render()
 		}
 	}
 
-	// Simple test rectangle
-	for (int y = 50; y < 150; y++)
+	const c_mouse_state* mouse_state = input_system_get_mouse_state();
+	int32 mouse_x = math_pin_int32(25, g_backbuffer.width - 26, mouse_state->position.x);
+	int32 mouse_y = math_pin_int32(25, g_backbuffer.height - 26, mouse_state->position.y);
+
+	const uint32 color = input_system_get_key_state(input_mouse_left)->is_down() ?
+		0xFFFF0000 : // red
+		0x0000FFFF; // ?
+
+	// Simple test square
+	for (int y = mouse_y - 25; y < mouse_y + 25; y++)
 	{
-		for (int x = 50; x < 200; x++)
+		for (int x = mouse_x - 25; x < mouse_x + 26; x++)
 		{
-			g_backbuffer.memory[y * g_backbuffer.width + x] = 0xFFFF0000; // red
+			g_backbuffer.memory[y * g_backbuffer.width + x] = color;
 		}
 	}
 }
@@ -231,6 +242,58 @@ LRESULT CALLBACK process_message_callback(HWND hwnd, UINT msg, WPARAM param, LPA
 			window->send_window_event(event);
 
 			return 0;
+		}
+
+		if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
+		{
+			s_input_key_event event;
+			event.data.key = input_key_invalid;
+			event.data.repeat_count = 0; // ?
+
+			switch (msg)
+			{
+			case WM_LBUTTONDOWN:
+				event.data.key = input_mouse_left;
+				event.data.down = true;
+				break;
+			case WM_LBUTTONUP:
+				event.data.key = input_mouse_left;
+				event.data.down = false;
+				break;
+			case WM_MBUTTONDOWN:
+				event.data.key = input_mouse_middle;
+				event.data.down = true;
+				break;
+			case WM_MBUTTONUP:
+				event.data.key = input_mouse_middle;
+				event.data.down = false;
+				break;
+			case WM_RBUTTONDOWN:
+				event.data.key = input_mouse_right;
+				event.data.down = true;
+				break;
+			case WM_RBUTTONUP:
+				event.data.key = input_mouse_right;
+				event.data.down = false;
+				break;
+			default:
+				// handle repeats here??
+				NOP();
+				break;
+			}
+
+			if (event.data.key != input_key_invalid)
+			{
+				window->send_window_event(event);
+			}
+		}
+
+		if (msg == WM_MOUSEMOVE)
+		{
+			s_input_mouse_event event;
+			event.data.x = GET_X_LPARAM(lParam);
+			event.data.y = GET_Y_LPARAM(lParam);
+			window->send_window_event(event);
 		}
 	
 		if (msg == WM_PAINT)

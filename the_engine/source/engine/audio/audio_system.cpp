@@ -110,23 +110,22 @@ void c_audio_engine_thread::process_audio()
 {
 	c_static_audio_buffer<real32, 2, k_audio_engine_buffer_size> mix_buffer;
 	
+	//m_HACK_test_sine.get_samples(mix_buffer);
+	//m_HACK_test_noise.get_samples(mix_buffer);
+	m_HACK_test_file.get_samples(mix_buffer);
+
+	// temp, make stereo
+	memory_copy(mix_buffer.get_channel(1), mix_buffer.get_channel(0), sizeof(real32) * mix_buffer.size());
+
+	// we need to be able to write the full mix_buffer, so wait until there's room.
 	while (g_audio_output_ring_buffer.free_sample_count() < mix_buffer.size())
 	{
 		NOP();
 	}
 
-	//m_HACK_test_sine.get_samples(mix_buffer);
-	//m_HACK_test_noise.get_samples(mix_buffer);
-	m_HACK_test_file.get_samples(mix_buffer);
-
-	memory_copy(mix_buffer.get_channel(1), mix_buffer.get_channel(0), sizeof(real32) * mix_buffer.size());
-
 	int32 samples_written = g_audio_output_ring_buffer.write(&mix_buffer, mix_buffer.size());
 
-	if (samples_written < mix_buffer.size())
-	{
-		NOP();
-	}
+	ASSERT(samples_written == mix_buffer.size());
 }
 
 bool c_audio_render_thread::setup_audio_sink()

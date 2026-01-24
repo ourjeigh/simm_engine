@@ -8,7 +8,7 @@
 #include <engine/input/input_system.h>
 
 
-const real32 k_max_fps = 30.0f;
+const real32 k_max_fps = 60.0f;
 const real32 k_max_frame_interval_seconds = 1 / k_max_fps;
 
 const uint32 k_global_memory_bytes = k_byte_mb;
@@ -31,6 +31,10 @@ void c_application::init()
 	log_system_init(log_settings);
 
 	engine_systems_init();
+
+	input_system_add_key_combo_callback(
+		c_delegate<t_key_combo_callback>::bind<c_application, &c_application::handle_escape_key>(this),
+		input_key_special_esc);
 }
 
 void c_application::term()
@@ -45,33 +49,26 @@ void c_application::run()
 	
 	while (m_running)
 	{
-		if (input_system_get_key_state(e_input_keycode::input_key_special_esc)->is_down())
+		c_timer timer;
+		timer.start();
+			
+		engine_systems_update();
+		//m_window.update(); todo
+
+		timer.stop();
+
+		// clean this up, don't use both
+		real64 span_millis = timer.get_time_span()->get_duration_milliseconds();
+		real64 span_seconds = timer.get_time_span()->get_duration_seconds();
+
+		real32 sleep_time = (k_max_frame_interval_seconds - static_cast<real32>(span_seconds));
+		if (sleep_time > 0.0f)
 		{
-			m_running = false;
+			sleep_for_seconds(sleep_time);
 		}
 		else
 		{
-			c_timer timer;
-			timer.start();
-			
-			engine_systems_update();
-			//m_window.update(); todo
-
-			timer.stop();
-
-			// clean this up, don't use both
-			real64 span_millis = timer.get_time_span()->get_duration_milliseconds();
-			real64 span_seconds = timer.get_time_span()->get_duration_seconds();
-
-			real32 sleep_time = (k_max_frame_interval_seconds - static_cast<real32>(span_seconds));
-			if (sleep_time > 0.0f)
-			{
-				sleep_for_seconds(sleep_time);
-			}
-			else
-			{
-				log(warning, "Long Frame Time: %.2f milliseconds", span_millis);
-			}
+			log(warning, "Long Frame Time: %.2f milliseconds", span_millis);
 		}
 	}
 }
@@ -112,6 +109,13 @@ void c_application::handle_window_event(s_event& event)
 	}
 }
 
+void c_application::handle_escape_key(bool down)
+{
+	if (down)
+	{
+		m_running = false;
+	}
+}
 
 void c_application::handle_window_close()
 {

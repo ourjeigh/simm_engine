@@ -67,6 +67,10 @@ enum e_input_keycode : int16
 	input_key_special_tab,
 	input_key_special_esc,
 
+	input_mouse_left,
+	input_mouse_middle,
+	input_mouse_right,
+
 	k_input_key_first_num = input_key_num_0,
 	k_input_key_last_num = input_key_num_9,
 
@@ -79,9 +83,12 @@ enum e_input_keycode : int16
 	k_input_key_first_special = input_key_special_shift,
 	k_input_key_last_special = input_key_special_esc,
 
+	k_input_first_mouse = input_mouse_left,
+	k_input_last_mouse = input_mouse_right,
+
 	k_input_key_count
 };
 
-e_input_keycode get_key_code_from_platform_key(uint16 platform_key);
+e_input_keycode get_key_code_from_platform_key(uint64 platform_key);
 
 #endif //__INPUT_MAP_H__

@@ -35,6 +35,11 @@ t_type math_pin(t_type min, t_type max, t_type val)
 	return math_min(max, math_max(min, val));
 }
 
+inline int32 math_pin_int32(int32 min, int32 max, int32 val)
+{
+	return math_pin(min, max, val);
+}
+
 template<typename t_type>
 t_type math_abs(t_type in)
 {

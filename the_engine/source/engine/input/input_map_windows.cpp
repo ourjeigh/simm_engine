@@ -120,7 +120,7 @@ const uint16 k_input_id_gamepad_r_thumb_down = VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN;
 const uint16 k_input_id_gamepad_r_thumb_right = VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT;
 const uint16 k_input_id_gamepad_r_thumb_left = VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT;
 
-e_input_keycode get_key_code_from_platform_key(uint16 platform_key)
+e_input_keycode get_key_code_from_platform_key(uint64 platform_key)
 {
 	// make platform agnostic
 	switch (platform_key)
@@ -170,6 +170,8 @@ e_input_keycode get_key_code_from_platform_key(uint16 platform_key)
 	default:
 		HALT_UNIMPLEMENTED();
 	}
+
+	return input_key_invalid;
 }
 
 #endif //PLATFORM_WINDOWS
