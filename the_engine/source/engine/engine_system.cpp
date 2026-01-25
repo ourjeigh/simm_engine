@@ -1,8 +1,6 @@
 #include "engine_system.h"
-#include <types/types.h>
 #include "audio/audio_system.h"
 #include "input/input_system.h"
-#include "asserts.h"
 
 static c_input_system g_input_system;
 static c_audio_system g_audio_system;

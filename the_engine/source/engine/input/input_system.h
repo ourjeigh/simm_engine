@@ -157,7 +157,7 @@ struct s_key_combo_delegate
 /// - we almost certainly just want edge triggering
 /// </summary>
 
-class c_input_system : public c_engine_system
+class c_input_system : public c_engine_system<c_input_system>
 {
 public:
 	virtual void init() override;
@@ -167,16 +167,15 @@ public:
 	template<typename... t_type>
 	static void add_key_combo_callback(c_delegate<t_key_combo_callback> callback, t_type... keys)
 	{
-		ASSERT(!c_input_system::m_system->m_key_combo_callbacks.full());
+		ASSERT(!get().m_key_combo_callbacks.full());
 
-		s_key_combo_delegate& new_combo = c_input_system::m_system->m_key_combo_callbacks.push();
+		s_key_combo_delegate& new_combo = get().m_key_combo_callbacks.push();
 		new_combo.callback = callback;
 		new_combo.combo.keys.clear();
 
 		(new_combo.combo.keys.push(keys), ...);
 	}
 
-	static c_input_system* m_system;
 private:
 	c_stack<s_key_combo_delegate, 32> m_key_combo_callbacks;
 };
@@ -185,11 +184,10 @@ void input_system_handle_event(s_event& event);
 
 const c_key_state* input_system_get_key_state(e_input_keycode key);
 const c_mouse_state* input_system_get_mouse_state();
-const c_input_system* get_input_system_const();
 
 template<typename... e_input_keycode>
 static void input_system_add_key_combo_callback(c_delegate<t_key_combo_callback> callback, e_input_keycode... keys)
 {
-	c_input_system::m_system->add_key_combo_callback(callback, keys...);
+	c_input_system::get().add_key_combo_callback(callback, keys...);
 }
 #endif//__INPUT_SYSTEM_H__

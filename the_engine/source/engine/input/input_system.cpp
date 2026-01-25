@@ -44,15 +44,9 @@ void process_input_event_queue_internal();
 c_stack<s_input_queued_event, 256> g_input_event_queue;
 s_input_state g_input_state;
 
-// ew - need a better method for access to the global input system
-c_input_system* c_input_system::m_system = nullptr;
-
 // public methods
 void c_input_system::init()
 {
-	ASSERT(c_input_system::m_system == nullptr);
-
-	c_input_system::m_system = this;
 	g_input_event_queue.clear();
 	g_input_state.clear();
 	log(verbose, "Input System Initialized");
@@ -61,7 +55,6 @@ void c_input_system::init()
 void c_input_system::term()
 {
 	g_input_state.clear();
-	c_input_system::m_system = nullptr;
 	log(verbose, "Input System Terminated");
 }
 
@@ -99,12 +92,6 @@ const c_mouse_state* input_system_get_mouse_state()
 {
 	return &g_input_state.mouse_state;
 }
-
-const c_input_system* get_input_system_const()
-{
-	return c_input_system::m_system;
-}
-
 
 void input_system_handle_event(s_event& event)
 {

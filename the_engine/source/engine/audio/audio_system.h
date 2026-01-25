@@ -45,7 +45,7 @@ public:
 	}
 };
 
-class c_audio_system : public c_engine_system
+class c_audio_system : public c_engine_system<c_audio_system>
 {
 public:
 	virtual void init() override;
