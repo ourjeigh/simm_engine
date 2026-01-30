@@ -146,11 +146,10 @@ void window_thread_entry_point(c_window* window)
 
 	SetLastError(0);
 
-	LONG_PTR windowptr = reinterpret_cast<LONG_PTR>(window);
-	auto result = SetWindowLongPtr(
+	LONG_PTR result = SetWindowLongPtr(
 		hwnd,
 		GWLP_USERDATA,
-		windowptr);
+		reinterpret_cast<LONG_PTR>(window));
 
 	if (result == 0)
 	{

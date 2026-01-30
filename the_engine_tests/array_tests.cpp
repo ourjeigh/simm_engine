@@ -304,3 +304,14 @@ TEST(C_BIT_ARRAY, TEST_ALL)
 
 	EXPECT_TRUE(flags.all());
 }
+
+TEST(ARRAY, ARRAY_HAS_NON_ZERO_VALUES)
+{
+	c_array<int32, 256> array;
+	zero_object(array);
+
+	EXPECT_FALSE(array_has_non_zero_data(array.make_reference()));
+
+	array[200] = -253;
+	EXPECT_TRUE(array_has_non_zero_data(array.make_reference()));
+}

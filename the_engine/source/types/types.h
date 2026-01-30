@@ -131,4 +131,17 @@ inline uint32 real64_to_uint32(real64 in)
 	return static_cast<uint32>(in);
 }
 
+// this feels like it belongs somewhere else
+
+template<typename t_type>
+bool in_range(t_type min, t_type max, t_type value)
+{
+	return min <= value && value <= max;
+}
+
+inline bool in_range_int32(int32 min, int32 max, int32 value)
+{
+	return in_range(min, max, value);
+}
+
 #endif //__TYPES_H__

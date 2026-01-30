@@ -84,8 +84,12 @@ template<class t_type>
 class c_array_reference : public i_array<c_array_reference<t_type>, t_type>
 {
 public:
+	c_array_reference() : m_data_ref(nullptr), m_capacity(0) {}
+
 	explicit c_array_reference(t_type* data, int32 capacity) : m_data_ref(data), m_capacity(capacity) {}
+
 	c_array_reference(const c_array_reference& other) : m_data_ref(other.m_data_ref), m_capacity(other.m_capacity) {}
+
 	c_array_reference& operator=(const c_array_reference& other)
 	{
 		m_data_ref = other.m_data_ref;
@@ -93,6 +97,7 @@ public:
 		return *this;
 	}
 
+	bool is_valid() { return m_data_ref != nullptr; }
 	int32 capacity() const { return m_capacity; }
 	t_type* data() { return m_data_ref; }
 	const t_type* data() const { return m_data_ref; }
@@ -357,4 +362,21 @@ class c_flags : public c_bit_array<k_size>
 {
 	// TODO: make a constructor that can take initial values
 };
+
+template<typename t_type>
+bool array_has_non_zero_data(c_array_reference<t_type> array)
+{
+	for (auto it =  array.begin();
+		it != array.end();
+		++it)
+	{
+		byte value = static_cast<byte>(*it);
+		if (value != 0x0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
 #endif //__ARRAY_H__

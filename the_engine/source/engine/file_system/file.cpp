@@ -5,6 +5,10 @@ IGNORE_WINDOWS_WARNINGS_PUSH
 #include "windows.h"
 #include <minwinbase.h>
 #include <platform/platform_handle_windows.h>
+#include <debug/logging.h>
+
+// move into windows impl
+const uint64 k_file_size_max_word = MAXWORD;
 IGNORE_WINDOWS_WARNINGS_POP
 
 template<class t_type>
@@ -27,20 +31,13 @@ c_file_path::c_file_path(const c_file_path& other)
 
 bool c_file_path::exists() const
 {
-	bool result = false;
+	return get_file_info(*this).exists;
+}
 
-	WIN32_FIND_DATA file_data;
-	HANDLE find_handle;
-
-	find_handle = FindFirstFileA(m_data.get_const_char(), &file_data);
-	if (find_handle != INVALID_HANDLE_VALUE)
-	{
-		result = true;
-		//ASSERT(string_compare(file_data.cFileName, m_data.get_const_char()) == 0);
-		FindClose(find_handle);
-	}
-
-	return result;
+// remove?
+uint64 c_file_path::get_file_size_bytes() const
+{
+	return get_file_info(*this).size_bytes;
 }
 
 void c_file_path::get_file_name(t_string_256& out_file_name) const
@@ -62,7 +59,7 @@ void c_file_path::get_file_ext(t_string_256& out_file_ext) const
 	uint8 file_name_index;
 	uint8 ext_index;
 	split_path(directory_name_index, file_name_index, ext_index);
-	
+
 	out_file_ext.copy_from_range(m_data, ext_index, m_data.used());
 }
 
@@ -142,7 +139,7 @@ bool c_file::open(const c_file_path& file_path, t_file_open_mode_flags flags)
 	HANDLE file_handle = nullptr;
 
 	DWORD access = 0;
-	
+
 	if (flags.test(file_open_mode_read))
 	{
 		access |= GENERIC_READ;
@@ -168,13 +165,15 @@ bool c_file::open(const c_file_path& file_path, t_file_open_mode_flags flags)
 		creation_disposition,
 		attributes,
 		template_file);
-	
+
 	if (file_handle != INVALID_HANDLE_VALUE)
 	{
 		result = true;
 		m_file_handle = c_platform_handle_factory::get_platform_handle_from_native_handle(file_handle);
 		m_flags = flags;
 	}
+
+	m_file_size = file_path.get_file_size_bytes();
 
 	return result;
 }
@@ -218,6 +217,8 @@ bool c_file::close()
 uint32 c_file::read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer)
 {
 	ASSERT(is_open());
+	ASSERT(in_range_int32(1, out_buffer.capacity(), length));
+
 	return read_file_internal(
 		m_file_handle,
 		m_flags,
@@ -225,6 +226,79 @@ uint32 c_file::read_bytes(int32 start, int32 length, c_array_reference<byte> out
 		length,
 		out_buffer);
 }
+
+bool c_file_buffered::open(const c_file_path& file_path, t_file_open_mode_flags flags)
+{
+	ASSERT(m_buffer.is_valid());
+
+	bool result = c_file::open(file_path, flags);
+
+	// tbd if a big read is desired on open
+	if (result && flags.test(file_open_mode_read))
+	{
+		uint32 bytes_read = c_file::read_bytes(m_file_position, m_buffer.capacity(), m_buffer);
+		m_file_position += bytes_read;
+		m_buffer_end = bytes_read;
+		result = bytes_read > 0;
+	}
+
+	return result;
+}
+
+uint32 c_file_buffered::read_bytes(int32 length, c_array_reference<byte> out_buffer)
+{
+	ASSERT(is_open());
+	ASSERT(in_range_int32(1, out_buffer.capacity(), length));
+
+	// if the read request is larger than the buffer capacity, we will be guaranteed to have to do an immediate disk read,
+	// which defeats the purpose of a buffered file. eventually we could support this case, but for now we'll keep it simple 
+	// and just forbid it. keeping the warning as a reminder
+	ASSERT(length < m_buffer.capacity());
+	/*if (length >= m_buffer.capacity())
+	{
+		log(warning,
+			"c_file_buffere: read_bytes length called with length larger than buffer size. consider increasing the \
+			file's buffer size to improve efficiency if reads of this length are needed [file: %s, buffer size: %i, read length: %i]",
+			m_path,
+			m_buffer.capacity(),
+			length);
+	}*/
+
+	int32 out_bytes_copied = 0;
+	int32 buffered_bytes_remaining = m_buffer_end - m_buffer_position;
+
+	int32 first_size = math_min(buffered_bytes_remaining, length);
+	if (first_size > 0)
+	{
+		out_buffer.copy_from_range(m_buffer, m_buffer_position, m_buffer_position + first_size);
+		out_bytes_copied += first_size;
+		m_buffer_position += first_size;
+	}
+
+	if (!eof() && out_bytes_copied < length)
+	{
+		// read a new chunk into the buffer
+		uint32 bytes_read = c_file::read_bytes(m_file_position, m_buffer.capacity(), m_buffer);
+		m_file_position += bytes_read;
+		m_buffer_end = bytes_read;
+
+		// if we didn't read a full buffer, it should be because we hit eof
+		if (bytes_read < m_buffer.capacity())
+		{
+			ASSERT(eof());
+		}
+
+		// copy the remaing bytes needed into the output from the beginning of the buffer
+		int32 second_size = math_min<int32>(bytes_read, length - out_bytes_copied);
+		out_buffer.copy_from_range(m_buffer, 0, second_size);
+		out_bytes_copied += second_size;
+		m_buffer_position = second_size;
+	}
+
+	// we may have read more bytes than requested to build up the buffer
+	return out_bytes_copied;
+}
+
 
 char get_path_separator()
 {
@@ -234,6 +308,28 @@ char get_path_separator()
 char get_ext_separator()
 {
 	return '.';
+}
+
+s_file_info get_file_info(const c_file_path& file_path)
+{
+	s_file_info out_info;
+	zero_object(out_info);
+
+	WIN32_FIND_DATA file_data;
+	HANDLE find_handle;
+
+	find_handle = FindFirstFileA(file_path.get_full_path(), &file_data);
+	if (find_handle != INVALID_HANDLE_VALUE)
+	{
+		const uint64 high_shift = k_file_size_max_word + 1;
+		out_info.size_bytes = (file_data.nFileSizeHigh * (high_shift)) + file_data.nFileSizeLow;
+
+		// parse datetime info once we have our own internal datetime structs
+
+		FindClose(find_handle);
+	}
+
+	return out_info;
 }
 
 // private
