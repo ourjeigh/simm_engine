@@ -38,6 +38,27 @@ public:
 		return data()[index];
 	}
 
+	bool operator==(const i_array<t_derived_array, t_type>& other) const
+	{
+		bool equal = false;
+		if (capacity() == other.capacity())
+		{
+			equal = true;
+
+			for (int32 i = 0; equal && i < capacity(); i++)
+			{
+				equal = data()[i] == other.data()[i];
+			}
+		}
+
+		return equal;
+	}
+
+	bool operator!=(const i_array<t_derived_array, t_type>& other) const
+	{
+		return !(operator==(other));
+	}
+
 	iterator begin() { return iterator(&data()[0]); }
 	iterator end() { return iterator(&data()[capacity()]); }
 
@@ -67,6 +88,20 @@ public:
 		assert_valid_index(count - 1);
 
 		memory_copy(data(), &other.data()[start], sizeof(t_type) * count);
+	}
+
+	template<class t_other_derived_type>
+	void copy_from_range_offset(const i_array<t_other_derived_type, t_type>& other, int32 start, int32 end, int32 offset)
+	{
+		ASSERT(start >= 0);
+		ASSERT(end <= other.capacity());
+		ASSERT(start < end);
+
+		int32 count = (end - start);
+
+		assert_valid_index(offset + count - 1);
+
+		memory_copy(data() + offset, &other.data()[start], sizeof(t_type) * count);
 	}
 
 protected:
@@ -123,6 +158,19 @@ public:
 		for (int32 i = 0; i < k_max_size; ++i)
 		{
 			m_data[i] = other.m_data[i];
+		}
+	}
+
+	template<typename... args>
+	constexpr c_array<t_type, k_max_size>(args... list)
+	{
+		COMPILE_ASSERT(k_max_size == sizeof...(list));
+
+		int32 i = 0;
+		for (t_type item : {list...})
+		{
+			m_data[i] = item;
+			i++;
 		}
 	}
 

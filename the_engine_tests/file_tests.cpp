@@ -27,7 +27,7 @@ TEST(FILE_INFO, GET_FILE_NAME)
 
 	t_string_256 file_name;
 	file_path.get_file_name(file_name);
-	EXPECT_EQ(string_compare(file_name.get_const_char(), "file_tests.cpp"), 0);
+	EXPECT_EQ(string_compare(file_name.get_const_char(), "test_file_text.h"), 0);
 }
 
 TEST(FILE_INFO, GET_FILE_EXT)
@@ -37,7 +37,7 @@ TEST(FILE_INFO, GET_FILE_EXT)
 
 	t_string_256 file_ext;
 	file_path.get_file_ext(file_ext);
-	EXPECT_EQ(string_compare(file_ext.get_const_char(), "cpp"), 0);
+	EXPECT_EQ(string_compare(file_ext.get_const_char(), "h"), 0);
 }
 
 TEST(FILE_INFO, GET_FILE_NAME_NO_EXT)
@@ -47,7 +47,7 @@ TEST(FILE_INFO, GET_FILE_NAME_NO_EXT)
 
 	t_string_256 file_ext;
 	file_path.get_file_name_no_ext(file_ext);
-	EXPECT_EQ(string_compare(file_ext.get_const_char(), "file_tests"), 0);
+	EXPECT_EQ(string_compare(file_ext.get_const_char(), "test_file_text"), 0);
 }
 
 TEST(FILE_INFO, GET_DIRECTORY_PATH)
@@ -215,4 +215,45 @@ TEST(C_FILE_BUFFERED, READ_BYTES)
 		NOP();
 	}
 
+}
+
+// if we maintain an external pointer to the read position, we expect a byte for byte match between
+// the buffered and unbuffered reads as we progress thru a file.
+TEST(C_FILE_BUFFERED, UNBUFFERED_COMPARISON)
+{
+	t_string_256 file_path_string(k_test_file_path_real);
+	c_file_path file_path(file_path_string);
+	t_file_open_mode_flags flags;
+
+	c_file_buffered file;
+	c_stack<byte, 200> file_buffer;
+	file.set_buffer(file_buffer.make_reference());
+
+	flags.set(file_open_mode_read, true);
+	EXPECT_TRUE(file.open(file_path, flags));
+
+	// non-divisible by 200 to make sure we force one of the reads to require a buffer refill mid-way
+	c_array<byte, 105> read_buffered;
+	c_array<byte, 105> read_unbuffered;
+	zero_object(read_buffered);
+	zero_object(read_unbuffered);
+
+	EXPECT_EQ(read_buffered, read_unbuffered);
+
+	int32 bytes_read_buffered = 0;
+	int32 bytes_read_unbuffered = 0;
+	int32 read_unbuffered_position = 0;
+	do
+	{
+		bytes_read_buffered = file.read_bytes(read_buffered.capacity(), read_buffered.make_reference());
+		bytes_read_unbuffered = file.read_bytes_unbuffered(read_unbuffered_position, read_unbuffered.capacity(), read_unbuffered.make_reference());
+		read_unbuffered_position += bytes_read_unbuffered;
+
+		EXPECT_EQ(bytes_read_buffered, bytes_read_unbuffered);
+		EXPECT_EQ(read_buffered, read_unbuffered);
+
+		zero_object(read_buffered);
+		zero_object(read_unbuffered);
+
+	} while (bytes_read_buffered == read_buffered.capacity());
 }

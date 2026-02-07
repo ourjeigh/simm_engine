@@ -69,7 +69,8 @@ public:
 
 	void get_samples(t_audio_buffer_real32& out_buffer);
 private:
-	c_file m_file;
+	// todo: either make this a templatized size or allow the buffer to be dynamically allocated
+	c_file_static_buffered<30 * k_byte_kb> m_file;
 	s_audio_file_format m_format;
 	uint32 m_position;
 	bool m_looping;

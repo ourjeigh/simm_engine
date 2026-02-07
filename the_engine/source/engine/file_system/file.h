@@ -58,7 +58,7 @@ public:
 
 	bool is_open() const { return m_file_handle.is_valid(); }
 
-	uint32 read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer);
+	int32 read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer);
 
 protected:
 	c_file_path m_path;
@@ -70,21 +70,41 @@ protected:
 class c_file_buffered : protected c_file
 {
 public:
-	c_file_buffered() : m_file_position(0), m_buffer_position(0), m_buffer_end(0) {}
+	c_file_buffered() { reset(); }
 
 	void set_buffer(c_array_reference<byte> buffer) { m_buffer = buffer; }
 	void set_read_position(int32 read_position)
 	{
 		ASSERT(read_position < m_file_size);
+
+		// force the next read to refil the buffer
+		reset();
+
 		m_file_position = read_position;
 	}
 
 	bool open(const c_file_path& file_path, t_file_open_mode_flags flags) override;
-	uint32 read_bytes(int32 length, c_array_reference<byte> out_buffer);
+	bool close() 
+	{
+		reset();
+		return c_file::close(); 
+	}
+
+	int32 read_bytes(int32 length, c_array_reference<byte> out_buffer);
+	int32 read_bytes_unbuffered(int32 start, int32 length, c_array_reference<byte> out_buffer) 
+	{
+		return c_file::read_bytes(start, length, out_buffer);
+	}
 
 	bool eof() const { return m_file_position == m_file_size; }
 
 protected:
+	void reset()
+	{
+		m_buffer_position = 0;
+		m_buffer_end = 0;
+		m_file_position = 0;
+	}
 
 	// consider switching this to a stack since m_buffer_end is essentially tracking top
 	c_array_reference<byte> m_buffer;
@@ -107,7 +127,6 @@ public:
 
 private:
 	c_array<byte, k_size> m_storage;
-
 };
 
 char get_path_separator();

@@ -77,12 +77,8 @@ TEST(C_ARRAY, C_ARRAY_ASSERTS)
 
 TEST(C_ARRAY_REF, MAKE_REFERENCE)
 {
-	c_array<int32, 5> array1;
 
-	for (int32 i = 0; i < 5; i++)
-	{
-		array1[i] = i + 1;
-	}
+	c_array<int32, 5> array1 = { 1, 2, 3, 4, 5 };
 
 	c_array_reference<int32> ref = array1.make_reference();
 
@@ -94,13 +90,7 @@ TEST(C_ARRAY_REF, MAKE_REFERENCE)
 
 TEST(C_ARRAY_REF, MAKE_REFERENCE_CONST)
 {
-	c_array<int32, 5> array1;
-
-	for (int32 i = 0; i < 5; i++)
-	{
-		array1[i] = i + 1;
-	}
-
+	c_array<int32, 5> array1 = { 1, 2, 3, 4, 5};
 	c_array_reference<const int32> ref = array1.make_reference_const();
 
 	for (int32 i = 0; i < 5; i++)
@@ -111,12 +101,7 @@ TEST(C_ARRAY_REF, MAKE_REFERENCE_CONST)
 
 TEST(I_ARRAY, COPY_FROM_SAME_TYPE)
 {
-	c_array<int32, 10> array1;
-
-	for (int32 i = 0; i < 10; i++)
-	{
-		array1[i] = i + 1;
-	}
+	c_array<int32, 10> array1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
 	c_array<int32, 10> array2;
 
@@ -130,12 +115,7 @@ TEST(I_ARRAY, COPY_FROM_SAME_TYPE)
 
 TEST(I_ARRAY, COPY_FROM_DIFF_TYPE)
 {
-	c_array<int32, 10> array1;
-
-	for (int32 i = 0; i < 10; i++)
-	{
-		array1[i] = i + 1;
-	}
+	c_array<int32, 10> array1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
 	c_array<int32, 5> array2;
 
@@ -149,18 +129,10 @@ TEST(I_ARRAY, COPY_FROM_DIFF_TYPE)
 
 TEST(I_ARRAY, COPY_FROM_REF)
 {
-	c_array<int32, 10> array1;
-
-	for (int32 i = 0; i < 10; i++)
-	{
-		array1[i] = i + 1;
-	}
-
-	c_array_reference<int32> ref1 = array1.make_reference();
-
+	c_array<int32, 10> array1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 	c_array<int32, 5> array2;
 
-	array2.copy_from_range(ref1, 0, 5);
+	array2.copy_from_range(array1.make_reference(), 0, 5);
 
 	for (int32 i = 0; i < 5; i++)
 	{
@@ -170,18 +142,11 @@ TEST(I_ARRAY, COPY_FROM_REF)
 
 TEST(I_ARRAY, COPY_FROM_OFFSET)
 {
-	c_array<int32, 10> array1;
-
-	for (int32 i = 0; i < 10; i++)
-	{
-		array1[i] = i + 1;
-	}
-
-	c_array_reference<int32> ref1 = array1.make_reference();
+	c_array<int32, 10> array1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
 	c_array<int32, 5> array2;
 
-	array2.copy_from_range(ref1, 2, 7);
+	array2.copy_from_range(array1.make_reference(), 2, 7);
 
 	for (int32 i = 0; i < 5; i++)
 	{
@@ -191,18 +156,42 @@ TEST(I_ARRAY, COPY_FROM_OFFSET)
 
 TEST(I_ARRAY, COPY_FROM_BAD_RANGE)
 {
-	c_array<int32, 10> array1;
-
-	for (int32 i = 0; i < 10; i++)
-	{
-		array1[i] = i + 1;
-	}
+	c_array<int32, 10> array1 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 	c_array_reference<int32> ref1 = array1.make_reference();
 
 	c_array<int32, 5> array2;
 
 	EXPECT_DEATH(array2.copy_from_range(ref1, 2, 8), ".*");
+}
+
+TEST(I_ARRAY, COPY_FROM_RANGE_OFFSET)
+{
+	c_array<int32, 10> array1 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	c_array<int32, 10> array2;
+	zero_object(array2);
+
+	const int32 start = 2;
+	const int32 end = 5;
+	const int32 offset = 2;
+	c_array<int32, 10> expected = { 0, 0, 2, 3, 4, 0, 0, 0, 0, 0 };
+
+	array2.copy_from_range_offset(array1, start, end, offset);
+
+	for (int32 i = 0; i < array2.capacity(); i++)
+	{
+		EXPECT_EQ(array2[i], expected[i]);
+	}
+}
+
+TEST(I_ARRAY, EQUALS_OPERATOR)
+{
+	const c_array<int32, 10> array_match_1 = { 1, 2, 3, 4 , 5, 6, 7, 8, 9, 10 };
+	const c_array<int32, 10> array_match_2 = { 1, 2, 3, 4 , 5, 6, 7, 8, 9, 10 };
+	const c_array<int32, 10> array_no_match = { 1, 2, 3, 4 , 5, 6, 7, 8, 4, 10};
+
+	EXPECT_EQ(array_match_1, array_match_2);
+	EXPECT_NE(array_match_1, array_no_match);
 }
 
 TEST(C_STACK, C_STACK_PUSH_POP_TOP)

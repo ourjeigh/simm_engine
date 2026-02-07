@@ -171,9 +171,10 @@ bool c_file::open(const c_file_path& file_path, t_file_open_mode_flags flags)
 		result = true;
 		m_file_handle = c_platform_handle_factory::get_platform_handle_from_native_handle(file_handle);
 		m_flags = flags;
+		m_file_size = file_path.get_file_size_bytes();
+		m_path = file_path;
 	}
 
-	m_file_size = file_path.get_file_size_bytes();
 
 	return result;
 }
@@ -214,7 +215,7 @@ bool c_file::close()
 //	return read_count;
 //}
 
-uint32 c_file::read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer)
+int32 c_file::read_bytes(int32 start, int32 length, c_array_reference<byte> out_buffer)
 {
 	ASSERT(is_open());
 	ASSERT(in_range_int32(1, out_buffer.capacity(), length));
@@ -245,7 +246,7 @@ bool c_file_buffered::open(const c_file_path& file_path, t_file_open_mode_flags 
 	return result;
 }
 
-uint32 c_file_buffered::read_bytes(int32 length, c_array_reference<byte> out_buffer)
+int32 c_file_buffered::read_bytes(int32 length, c_array_reference<byte> out_buffer)
 {
 	ASSERT(is_open());
 	ASSERT(in_range_int32(1, out_buffer.capacity(), length));
@@ -275,10 +276,15 @@ uint32 c_file_buffered::read_bytes(int32 length, c_array_reference<byte> out_buf
 		m_buffer_position += first_size;
 	}
 
+	log(verbose, "c_file_buffered: first read: %i of %i requested. file: %s",
+		first_size,
+		length,
+		m_path.get_full_path());
+
 	if (!eof() && out_bytes_copied < length)
 	{
 		// read a new chunk into the buffer
-		uint32 bytes_read = c_file::read_bytes(m_file_position, m_buffer.capacity(), m_buffer);
+		int32 bytes_read = c_file::read_bytes(m_file_position, m_buffer.capacity(), m_buffer);
 		m_file_position += bytes_read;
 		m_buffer_end = bytes_read;
 
@@ -290,10 +296,17 @@ uint32 c_file_buffered::read_bytes(int32 length, c_array_reference<byte> out_buf
 
 		// copy the remaing bytes needed into the output from the beginning of the buffer
 		int32 second_size = math_min<int32>(bytes_read, length - out_bytes_copied);
-		out_buffer.copy_from_range(m_buffer, 0, second_size);
+		out_buffer.copy_from_range_offset(m_buffer, 0, second_size, first_size);
 		out_bytes_copied += second_size;
 		m_buffer_position = second_size;
+
+		log(verbose, "c_file_buffered: second read: %i of %i requested. file: %s",
+			second_size,
+			length,
+			m_path.get_full_path());
 	}
+
+	ASSERT(out_bytes_copied || eof());
 
 	// we may have read more bytes than requested to build up the buffer
 	return out_bytes_copied;
@@ -321,6 +334,8 @@ s_file_info get_file_info(const c_file_path& file_path)
 	find_handle = FindFirstFileA(file_path.get_full_path(), &file_data);
 	if (find_handle != INVALID_HANDLE_VALUE)
 	{
+		out_info.exists = true;
+
 		const uint64 high_shift = k_file_size_max_word + 1;
 		out_info.size_bytes = (file_data.nFileSizeHigh * (high_shift)) + file_data.nFileSizeLow;
 
